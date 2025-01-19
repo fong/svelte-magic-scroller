@@ -28,8 +28,7 @@
 <button
     style={`position: absolute; z-index: 100`}
     onclick={() => {
-        // index = Math.floor(Math.random() * 1000);
-        ref?.goto(Math.floor(Math.random() * 1000));
+        ref?.goto(Math.floor(Math.random() * 1000), { offset: { x: 0, y: 32 } });
     }}>Random Index {index}</button
 >
 

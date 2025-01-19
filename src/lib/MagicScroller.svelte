@@ -1,6 +1,6 @@
 <script>
     import MagicItem from './MagicItem.svelte';
-    const BUFFER_PX = 200; // Buffer zone in pixels
+    const BUFFER_PX = 5000; // Buffer zone in pixels
     let containerBounds = $state(null);
 
     let {
@@ -21,61 +21,60 @@
     } = $props();
 
     let containerRef = $state(null);
-    let itemWidths = $state(Array(data.length).fill(0));
-    let itemHeights = $state(Array(data.length).fill(0));
-    let itemTransformations = $state(Array(data.length).fill({}));
-    let cumulativeHeights = $state([]);
+    let itemWidths = $state(Array(data.length).fill(undefined));
+    let itemHeights = $state(Array(data.length).fill(undefined));
+    // let itemTransformations = $state([]);
     let lastX = $state(0);
     let lastY = $state(0);
     let scrollDelta = $state({ x: 0, y: 0 });
-    let _index = $state(0);
+    let _index = $state(2);
+    let offset = $state({ x: 0, y: 0 });
 
-    export const goto = (targetIndex) => {
+    let itemTransformations = $derived.by(() => {
+        let currentIndex = _index;
+        let anchorY = offset?.y || 0;
+
+        let tempTransformations = Array(data.length).fill({ x: 0, y: undefined });
+
+        // current index
+        tempTransformations[currentIndex] = { x: 0, y: anchorY };
+
+        // set positions of items above current index
+        let upIndex = currentIndex - 1;
+        let upOffset = anchorY;
+
+        while (upIndex >= 0 && Math.abs(upOffset) <= BUFFER_PX) {
+            const yTransform = itemHeights[upIndex] - upOffset || 0;
+            tempTransformations[upIndex] = { x: 0, y: -yTransform };
+            upOffset -= itemHeights[upIndex];
+            upIndex--;
+        }
+
+        // set positions of items below current index
+        upIndex = currentIndex + 1;
+        upOffset = anchorY + itemHeights[currentIndex];
+
+        while (
+            upIndex < data.length &&
+            Math.abs(upOffset) <= (BUFFER_PX + containerBounds?.height || 0)
+        ) {
+            const yTransform = upOffset || 999999;
+            tempTransformations[upIndex] = { x: 0, y: yTransform };
+            upOffset += itemHeights[upIndex];
+            upIndex++;
+        }
+
+        return tempTransformations;
+    });
+
+    export const goto = (targetIndex, options) => {
         console.log(targetIndex);
         if (!containerBounds || targetIndex < 0 || targetIndex >= data.length) return;
 
-        // // Calculate position to move target to top of container
-        // const targetPosition = cumulativeHeights[targetIndex];
-
-        // // Update scroll delta to position target at top
-        // scrollDelta.x = 0;
-        // scrollDelta.y = -targetPosition;
-
-        // Update transformations for all items
-        itemTransformations = itemHeights.map((height, i) => {
-            if (i < targetIndex) {
-                const stackPosition = cumulativeHeights[targetIndex] - cumulativeHeights[i];
-                return { x: 0, y: -stackPosition };
-            } else if (i > targetIndex) {
-                const stackPosition =
-                    cumulativeHeights[i] -
-                    cumulativeHeights[targetIndex + 1] +
-                    itemHeights[targetIndex];
-                return { x: 0, y: stackPosition };
-            }
-            // Target index item
-            return { x: 0, y: scrollDelta.y };
-        });
-
-        // Update index
+        offset = options?.offset || { x: 0, y: 0 };
         _index = targetIndex;
         index = targetIndex;
     };
-
-    $effect(() => {
-        let sum = 0;
-        cumulativeHeights = itemHeights.map((height) => {
-            const position = sum;
-            sum += height;
-            return position;
-        });
-    });
-
-    $effect(() => {
-        if (containerBounds && itemHeights && cumulativeHeights) {
-            updateTransformations(0, 0);
-        }
-    });
 
     $effect(() => {
         if (containerRef) {
@@ -85,7 +84,7 @@
 
     const handleOnScroll = (e) => {
         e.preventDefault();
-        updateTransformations(e.deltaX * WHEEL_SCALE, e.deltaY * WHEEL_SCALE);
+        scrollTransformations(e.deltaX * WHEEL_SCALE, e.deltaY * WHEEL_SCALE);
     };
 
     const handleOnTouchMove = (e) => {
@@ -93,7 +92,7 @@
         const deltaX = touch.clientX - lastX;
         const deltaY = touch.clientY - lastY;
 
-        updateTransformations(deltaX, deltaY);
+        scrollTransformations(deltaX, deltaY);
 
         lastX = touch.clientX;
         lastY = touch.clientY;
@@ -105,44 +104,48 @@
         lastY = touch.clientY;
     };
 
-    const updateTransformations = (deltaX, deltaY) => {
+    const scrollTransformations = (deltaX, deltaY, anchor, index) => {
         scrollDelta.x += direction !== 'y' ? deltaX : 0;
         scrollDelta.y += direction !== 'x' ? deltaY : 0;
-        let __index = undefined;
 
-        itemTransformations = itemHeights.map((height, i) => {
-            let x = scrollDelta.x;
-            let y = scrollDelta.y;
+        offset.x += deltaX;
+        offset.y += deltaY;
 
-            if (i < _index) {
-                const stackPosition = cumulativeHeights[_index] - cumulativeHeights[i];
-                y = -stackPosition + scrollDelta.y;
-            } else if (i > _index) {
-                const stackPosition =
-                    cumulativeHeights[i] - cumulativeHeights[_index + 1] + itemHeights[_index];
-                y = stackPosition + scrollDelta.y;
+        if (deltaY > 0) {
+            console.log('scroll up');
+            // scroll up
+            if (_index > 0) {
+                if (offset.y > itemHeights[_index - 1] || offset.y > containerBounds.height) {
+                    offset = { ...offset, y: offset.y - itemHeights[_index - 1] };
+                    _index--;
+                }
             }
+        }
 
-            const itemTop = y;
-            if (__index === undefined && itemTop >= 0 && itemTop <= containerBounds.height) {
-                __index = i;
+        if (deltaY < 0) {
+            console.log('scroll down');
+            // scroll down
+            if (_index < data.length) {
+                if (offset.y < 0 && itemHeights[_index] < containerBounds.height) {
+                    offset = { ...offset, y: offset.y + itemHeights[_index] };
+                    _index++;
+                }
+
+                if (
+                    offset.y + containerBounds.height < 0 &&
+                    itemHeights[_index] < containerBounds.height
+                ) {
+                    offset = { ...offset, y: offset.y + itemHeights[_index] };
+                    _index++;
+                }
             }
-
-            // Index item moves with scroll
-            return {
-                x: x,
-                y: y
-            };
-        });
-
-        index = __index;
-        console.log(index);
+        }
     };
 
     const isItemVisible = (transform) => {
         if (!containerBounds) return true;
 
-        const itemY = transform.y;
+        const itemY = transform?.y;
         const containerTop = -BUFFER_PX;
         const containerBottom = containerBounds.height + BUFFER_PX;
 
@@ -150,7 +153,17 @@
     };
 </script>
 
-<div>{index}</div>
+<div style={'position: absolute; right: 0;'}>
+    <p>
+        {_index}
+    </p>
+    <p>
+        {JSON.stringify(offset)}
+    </p>
+    <p>
+        {JSON.stringify(itemHeights[_index])}
+    </p>
+</div>
 <div
     bind:this={containerRef}
     class={cn}

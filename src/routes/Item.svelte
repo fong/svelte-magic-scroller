@@ -10,7 +10,7 @@
 </script>
 
 {#if loaded}
-    <div class="item">
+    <div class="item" style={`height: 256px;`}>
         {data?.id} Hello
         <div>Content</div>
     </div>

@@ -2,19 +2,21 @@
     let {
         visible = $bindable(false),
         component,
-        width = $bindable(0),
-        height = $bindable(0),
+        width = $bindable(undefined),
+        height = $bindable(undefined),
         transform = $bindable({
-            x: 0,
-            y: 0
+            x: undefined,
+            y: undefined
         }),
         data
     } = $props();
 
-    let transformStyle = $state(``);
+    let transformStyle = $state(`transform: translate3d(999999px, 999999px, 0);`);
 
     $effect(() => {
-        transformStyle = `transform: translate3d(${transform.x}px, ${transform.y}px, 0);`;
+        if (typeof transform?.x === 'number' && typeof transform?.y === 'number') {
+            transformStyle = `transform: translate3d(${transform?.x}px, ${transform?.y}px, 0);`;
+        }
     });
 </script>
 
