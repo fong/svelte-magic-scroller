@@ -4,11 +4,8 @@
         component,
         width = $bindable(undefined),
         height = $bindable(undefined),
-        transform = $bindable({
-            x: undefined,
-            y: undefined
-        }),
-        data
+        transform = $bindable({ x: undefined, y: undefined }),
+        index
     } = $props();
 
     let transformStyle = $state(`transform: translate3d(999999px, 999999px, 0);`);
@@ -26,6 +23,6 @@
         bind:offsetHeight={height}
         style={`position: absolute; ${transformStyle}`}
     >
-        {@render component(data)}
+        {@render component(index)}
     </div>
 {/if}

@@ -11,7 +11,7 @@
         headerPlaceholder,
         footerPlaceholder,
         index = $bindable(0),
-        data,
+        length,
         item,
         placeholder,
         footer,
@@ -21,9 +21,8 @@
     } = $props();
 
     let containerRef = $state(null);
-    let itemWidths = $state(Array(data.length).fill(undefined));
-    let itemHeights = $state(Array(data.length).fill(undefined));
-    // let itemTransformations = $state([]);
+    let itemWidths = $state(Array(length));
+    let itemHeights = $state(Array(length));
     let lastX = $state(0);
     let lastY = $state(0);
     let scrollDelta = $state({ x: 0, y: 0 });
@@ -34,7 +33,7 @@
         let currentIndex = _index;
         let anchorY = offset?.y || 0;
 
-        let tempTransformations = Array(data.length).fill({ x: 0, y: undefined });
+        let tempTransformations = Array(length);
 
         // current index
         tempTransformations[currentIndex] = { x: 0, y: anchorY };
@@ -55,7 +54,7 @@
         upOffset = anchorY + itemHeights[currentIndex];
 
         while (
-            upIndex < data.length &&
+            upIndex < length &&
             Math.abs(upOffset) <= (BUFFER_PX + containerBounds?.height || 0)
         ) {
             const yTransform = upOffset || 999999;
@@ -69,7 +68,7 @@
 
     export const goto = (targetIndex, options) => {
         console.log(targetIndex);
-        if (!containerBounds || targetIndex < 0 || targetIndex >= data.length) return;
+        if (!containerBounds || targetIndex < 0 || targetIndex >= length) return;
 
         offset = options?.offset || { x: 0, y: 0 };
         _index = targetIndex;
@@ -115,7 +114,18 @@
             console.log('scroll up');
             // scroll up
             if (_index > 0) {
-                if (offset.y > itemHeights[_index - 1] || offset.y > containerBounds.height) {
+                if (
+                    offset.y > itemHeights[_index - 1] &&
+                    itemHeights[_index - 1] < containerBounds.height
+                ) {
+                    offset = { ...offset, y: offset.y - itemHeights[_index - 1] };
+                    _index--;
+                }
+
+                if (
+                    offset.y + containerBounds.height > itemHeights[_index - 1] &&
+                    itemHeights[_index - 1] > containerBounds.height
+                ) {
                     offset = { ...offset, y: offset.y - itemHeights[_index - 1] };
                     _index--;
                 }
@@ -125,7 +135,7 @@
         if (deltaY < 0) {
             console.log('scroll down');
             // scroll down
-            if (_index < data.length) {
+            if (_index < length) {
                 if (offset.y < 0 && itemHeights[_index] < containerBounds.height) {
                     offset = { ...offset, y: offset.y + itemHeights[_index] };
                     _index++;
@@ -172,14 +182,14 @@
     ontouchmove={handleOnTouchMove}
     ontouchstart={handleOnTouchStart}
 >
-    {#each data as d, i (i)}
+    {#each itemTransformations as d, i (i)}
         <MagicItem
-            visible={isItemVisible(itemTransformations[i])}
+            visible={isItemVisible(d)}
             bind:width={itemWidths[i]}
             bind:height={itemHeights[i]}
-            bind:transform={itemTransformations[i]}
+            transform={d}
             component={item}
-            data={d}
+            index={i}
         />
     {/each}
 </div>

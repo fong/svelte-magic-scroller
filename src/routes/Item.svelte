@@ -1,5 +1,5 @@
 <script>
-    let { data, loaded = $bindable(false) } = $props();
+    let { index, loaded = $bindable(false) } = $props();
 
     setTimeout(
         () => {
@@ -11,11 +11,11 @@
 
 {#if loaded}
     <div class="item" style={`height: 256px;`}>
-        {data?.id} Hello
+        {index} Hello
         <div>Content</div>
     </div>
 {:else}
-    <div class="placeholder">{data?.id} Hello loading</div>
+    <div class="placeholder">{index} Hello loading</div>
 {/if}
 
 <style>

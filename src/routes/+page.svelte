@@ -2,9 +2,11 @@
     import MagicScroller from '$lib/MagicScroller.svelte';
     import Item from './Item.svelte';
 
+    const length = 10000;
     let height = $state(56);
     let index = $state(0);
     let ref = $state();
+    let nextIndex = $state(Math.floor(Math.random() * length));
 </script>
 
 {#snippet header()}
@@ -20,17 +22,32 @@
 {/snippet}
 
 {#snippet item(i)}
-    <svelte:component this={Item} data={i}></svelte:component>
+    <svelte:component this={Item} index={i}></svelte:component>
 {/snippet}
 
 <svelte:window bind:innerHeight={height} />
 
-<button
-    style={`position: absolute; z-index: 100`}
-    onclick={() => {
-        ref?.goto(Math.floor(Math.random() * 1000), { offset: { x: 0, y: 32 } });
-    }}>Random Index {index}</button
->
+<div style={`position: absolute; z-index: 100; display: flex; flex-direction: column;`}>
+    <button
+        onclick={() => {
+            ref?.goto(0, { offset: { x: 0, y: 32 } });
+        }}
+        >Start 0
+    </button>
+    <button
+        onclick={() => {
+            ref?.goto(nextIndex, { offset: { x: 0, y: 32 } });
+            nextIndex = Math.floor(Math.random() * length);
+        }}
+        >Random Index
+    </button>
+    <button
+        onclick={() => {
+            ref?.goto(length - 1, { offset: { x: 0, y: 32 } });
+        }}
+        >End {length.toString()}
+    </button>
+</div>
 
 <div class="wrapper">
     <MagicScroller
@@ -39,11 +56,7 @@
         height="50svh"
         style={`margin-top: 25svh;`}
         bind:index
-        data={Array(1000)
-            .fill()
-            .map((_, i) => ({
-                id: i
-            }))}
+        {length}
         {header}
         {footer}
         {item}
