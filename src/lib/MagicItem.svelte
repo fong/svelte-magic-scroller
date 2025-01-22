@@ -1,10 +1,9 @@
 <script>
     let {
-        visible = $bindable(false),
         component,
         width = $bindable(undefined),
         height = $bindable(undefined),
-        transform = $bindable({ x: undefined, y: undefined }),
+        transform = $bindable({ index: undefined, x: undefined, y: undefined }),
         index
     } = $props();
 
@@ -17,12 +16,10 @@
     });
 </script>
 
-{#if visible}
-    <div
-        bind:offsetWidth={width}
-        bind:offsetHeight={height}
-        style={`position: absolute; ${transformStyle}`}
-    >
-        {@render component(index)}
-    </div>
-{/if}
+<div
+    bind:offsetWidth={width}
+    bind:offsetHeight={height}
+    style={`position: absolute; ${transformStyle}`}
+>
+    {@render component(index)}
+</div>

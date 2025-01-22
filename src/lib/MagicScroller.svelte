@@ -1,6 +1,7 @@
 <script>
     import MagicItem from './MagicItem.svelte';
-    const BUFFER_PX = 5000; // Buffer zone in pixels
+    import CircularArray from './CircularArray';
+    const BUFFER_ZONE = 25; // Content to buffer above and below current index
     let containerBounds = $state(null);
 
     let {
@@ -21,8 +22,7 @@
     } = $props();
 
     let containerRef = $state(null);
-    let itemWidths = $state(Array(length));
-    let itemHeights = $state(Array(length));
+    let itemDimensions = $state(Array(length).fill({ width: 0, height: 0 }));
     let lastX = $state(0);
     let lastY = $state(0);
     let scrollDelta = $state({ x: 0, y: 0 });
@@ -33,33 +33,42 @@
         let currentIndex = _index;
         let anchorY = offset?.y || 0;
 
-        let tempTransformations = Array(length);
+        // Create circular buffer
+        let tempTransformations = new CircularArray(BUFFER_ZONE * 2);
 
-        // current index
-        tempTransformations[currentIndex] = { x: 0, y: anchorY };
+        tempTransformations.set(currentIndex, {
+            index: currentIndex,
+            x: 0,
+            y: anchorY
+        });
 
-        // set positions of items above current index
+        // Set positions above current index
         let upIndex = currentIndex - 1;
         let upOffset = anchorY;
 
-        while (upIndex >= 0 && Math.abs(upOffset) <= BUFFER_PX) {
-            const yTransform = itemHeights[upIndex] - upOffset || 0;
-            tempTransformations[upIndex] = { x: 0, y: -yTransform };
-            upOffset -= itemHeights[upIndex];
+        while (upIndex >= 0 && upIndex > currentIndex - BUFFER_ZONE) {
+            const yTransform = itemDimensions[upIndex].height - upOffset || 0;
+            tempTransformations.set(upIndex, {
+                index: upIndex,
+                x: 0,
+                y: -yTransform
+            });
+            upOffset -= itemDimensions[upIndex].height;
             upIndex--;
         }
 
-        // set positions of items below current index
+        // Set positions below current index
         upIndex = currentIndex + 1;
-        upOffset = anchorY + itemHeights[currentIndex];
+        upOffset = anchorY + itemDimensions[currentIndex].height;
 
-        while (
-            upIndex < length &&
-            Math.abs(upOffset) <= (BUFFER_PX + containerBounds?.height || 0)
-        ) {
+        while (upIndex < length && upIndex < currentIndex + BUFFER_ZONE) {
             const yTransform = upOffset || 999999;
-            tempTransformations[upIndex] = { x: 0, y: yTransform };
-            upOffset += itemHeights[upIndex];
+            tempTransformations.set(upIndex, {
+                index: upIndex,
+                x: 0,
+                y: yTransform
+            });
+            upOffset += itemDimensions[upIndex].height;
             upIndex++;
         }
 
@@ -115,18 +124,18 @@
             // scroll up
             if (_index > 0) {
                 if (
-                    offset.y > itemHeights[_index - 1] &&
-                    itemHeights[_index - 1] < containerBounds.height
+                    offset.y > itemDimensions[_index - 1].height &&
+                    itemDimensions[_index - 1].height < containerBounds.height
                 ) {
-                    offset = { ...offset, y: offset.y - itemHeights[_index - 1] };
+                    offset = { ...offset, y: offset.y - itemDimensions[_index - 1].height };
                     _index--;
                 }
 
                 if (
-                    offset.y + containerBounds.height > itemHeights[_index - 1] &&
-                    itemHeights[_index - 1] > containerBounds.height
+                    offset.y + containerBounds.height > itemDimensions[_index - 1].height &&
+                    itemDimensions[_index - 1].height > containerBounds.height
                 ) {
-                    offset = { ...offset, y: offset.y - itemHeights[_index - 1] };
+                    offset = { ...offset, y: offset.y - itemDimensions[_index - 1].height };
                     _index--;
                 }
             }
@@ -136,30 +145,20 @@
             console.log('scroll down');
             // scroll down
             if (_index < length) {
-                if (offset.y < 0 && itemHeights[_index] < containerBounds.height) {
-                    offset = { ...offset, y: offset.y + itemHeights[_index] };
+                if (offset.y < 0 && itemDimensions[_index].height < containerBounds.height) {
+                    offset = { ...offset, y: offset.y + itemDimensions[_index].height };
                     _index++;
                 }
 
                 if (
                     offset.y + containerBounds.height < 0 &&
-                    itemHeights[_index] < containerBounds.height
+                    itemDimensions[_index].height < containerBounds.height
                 ) {
-                    offset = { ...offset, y: offset.y + itemHeights[_index] };
+                    offset = { ...offset, y: offset.y + itemDimensions[_index].height };
                     _index++;
                 }
             }
         }
-    };
-
-    const isItemVisible = (transform) => {
-        if (!containerBounds) return true;
-
-        const itemY = transform?.y;
-        const containerTop = -BUFFER_PX;
-        const containerBottom = containerBounds.height + BUFFER_PX;
-
-        return itemY >= containerTop && itemY <= containerBottom;
     };
 </script>
 
@@ -171,7 +170,7 @@
         {JSON.stringify(offset)}
     </p>
     <p>
-        {JSON.stringify(itemHeights[_index])}
+        {JSON.stringify(itemDimensions[_index])}
     </p>
 </div>
 <div
@@ -183,13 +182,16 @@
     ontouchstart={handleOnTouchStart}
 >
     {#each itemTransformations as d, i (i)}
-        <MagicItem
-            visible={isItemVisible(d)}
-            bind:width={itemWidths[i]}
-            bind:height={itemHeights[i]}
-            transform={d}
-            component={item}
-            index={i}
-        />
+        {#key d?.index}
+            {#if typeof d?.index === 'number' && d?.index >= 0 && d?.index < length}
+                <MagicItem
+                    bind:width={itemDimensions[d.index].width}
+                    bind:height={itemDimensions[d.index].height}
+                    transform={d}
+                    component={item}
+                    index={d.index}
+                />
+            {/if}
+        {/key}
     {/each}
 </div>
