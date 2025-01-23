@@ -3,6 +3,7 @@
     import CircularArray from './CircularArray';
     const BUFFER_ZONE = 25; // Content to buffer above and below current index
     let containerBounds = $state(null);
+    const WHEEL_SCALE = 1.0;
 
     let {
         children,
@@ -28,6 +29,7 @@
     let scrollDelta = $state({ x: 0, y: 0 });
     let _index = $state(2);
     let offset = $state({ x: 0, y: 0 });
+    let smooth = $state(true);
 
     let itemTransformations = $derived.by(() => {
         let currentIndex = _index;
@@ -46,30 +48,35 @@
         let upIndex = currentIndex - 1;
         let upOffset = anchorY;
 
-        while (upIndex >= 0 && upIndex > currentIndex - BUFFER_ZONE) {
-            const yTransform = itemDimensions[upIndex].height - upOffset || 0;
-            tempTransformations.set(upIndex, {
-                index: upIndex,
-                x: 0,
-                y: -yTransform
-            });
-            upOffset -= itemDimensions[upIndex].height;
-            upIndex--;
+        if (upIndex >= 0) {
+            while (upIndex >= 0 && upIndex > currentIndex - BUFFER_ZONE) {
+                const yTransform = itemDimensions[upIndex].height - upOffset || 0;
+                tempTransformations.set(upIndex, {
+                    index: upIndex,
+                    x: 0,
+                    y: -yTransform
+                });
+                upOffset -= itemDimensions[upIndex].height;
+                upIndex--;
+            }
         }
 
         // Set positions below current index
         upIndex = currentIndex + 1;
-        upOffset = anchorY + itemDimensions[currentIndex].height;
 
-        while (upIndex < length && upIndex < currentIndex + BUFFER_ZONE) {
-            const yTransform = upOffset || 999999;
-            tempTransformations.set(upIndex, {
-                index: upIndex,
-                x: 0,
-                y: yTransform
-            });
-            upOffset += itemDimensions[upIndex].height;
-            upIndex++;
+        if (upIndex < length) {
+            upOffset = anchorY + itemDimensions[currentIndex].height;
+
+            while (upIndex < length && upIndex < currentIndex + BUFFER_ZONE) {
+                const yTransform = upOffset || 999999;
+                tempTransformations.set(upIndex, {
+                    index: upIndex,
+                    x: 0,
+                    y: yTransform
+                });
+                upOffset += itemDimensions[upIndex].height;
+                upIndex++;
+            }
         }
 
         return tempTransformations;
@@ -90,8 +97,9 @@
         }
     });
 
-    const handleOnScroll = (e) => {
+    const handleOnWheel = (e) => {
         e.preventDefault();
+        smooth = true;
         scrollTransformations(e.deltaX * WHEEL_SCALE, e.deltaY * WHEEL_SCALE);
     };
 
@@ -99,9 +107,8 @@
         const touch = e.touches[0];
         const deltaX = touch.clientX - lastX;
         const deltaY = touch.clientY - lastY;
-
+        smooth = false;
         scrollTransformations(deltaX, deltaY);
-
         lastX = touch.clientX;
         lastY = touch.clientY;
     };
@@ -129,9 +136,7 @@
                 ) {
                     offset = { ...offset, y: offset.y - itemDimensions[_index - 1].height };
                     _index--;
-                }
-
-                if (
+                } else if (
                     offset.y + containerBounds.height > itemDimensions[_index - 1].height &&
                     itemDimensions[_index - 1].height > containerBounds.height
                 ) {
@@ -148,9 +153,7 @@
                 if (offset.y < 0 && itemDimensions[_index].height < containerBounds.height) {
                     offset = { ...offset, y: offset.y + itemDimensions[_index].height };
                     _index++;
-                }
-
-                if (
+                } else if (
                     offset.y + containerBounds.height < 0 &&
                     itemDimensions[_index].height < containerBounds.height
                 ) {
@@ -176,11 +179,17 @@
 <div
     bind:this={containerRef}
     class={cn}
-    style={`width: ${width}; height: ${height}; overflow: visible; background: grey; ${style}`}
-    onscroll={handleOnScroll}
+    style={`width: ${width}; height: ${height}; overflow: visible; background: grey; position: relative; ${style}`}
+    onmousewheel={handleOnWheel}
     ontouchmove={handleOnTouchMove}
     ontouchstart={handleOnTouchStart}
 >
+    <div style={`position: absolute; top: 0; z-index: 0;`}>
+        {@render header()}
+    </div>
+    <div style={`position: absolute; bottom: 0; z-index: 0;`}>
+        {@render footer()}
+    </div>
     {#each itemTransformations as d, i (i)}
         {#key d?.index}
             {#if typeof d?.index === 'number' && d?.index >= 0 && d?.index < length}
@@ -190,6 +199,7 @@
                     transform={d}
                     component={item}
                     index={d.index}
+                    {smooth}
                 />
             {/if}
         {/key}

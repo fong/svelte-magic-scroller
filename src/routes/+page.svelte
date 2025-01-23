@@ -21,8 +21,8 @@
     <div class="placeholder"></div>
 {/snippet}
 
-{#snippet item(i)}
-    <svelte:component this={Item} index={i}></svelte:component>
+{#snippet item(i, loadDirection)}
+    <svelte:component this={Item} index={i} {loadDirection}></svelte:component>
 {/snippet}
 
 <svelte:window bind:innerHeight={height} />
