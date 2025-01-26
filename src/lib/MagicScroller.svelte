@@ -2,8 +2,13 @@
     import MagicItem from './MagicItem.svelte';
     import CircularArray from './CircularArray';
     const BUFFER_ZONE = 25; // Content to buffer above and below current index
+    const VELOCITY_HISTORY = 5;
+    const FRICTION = 0.95;
+    const MIN_VELOCITY = 0.1;
     let containerBounds = $state(null);
     const WHEEL_SCALE = 1.0;
+    const SCROLL_CHUNK_SIZE = 100;
+    const MOMENTUM_FACTOR = 0.8;
 
     let {
         children,
@@ -29,7 +34,10 @@
     let scrollDelta = $state({ x: 0, y: 0 });
     let _index = $state(2);
     let offset = $state({ x: 0, y: 0 });
-    let smooth = $state(true);
+    let touchHistory = $state([]);
+    let velocityX = $state(0);
+    let velocityY = $state(0);
+    let animationFrame = $state(null);
 
     let itemTransformations = $derived.by(() => {
         let currentIndex = _index;
@@ -100,13 +108,27 @@
     const handleOnWheel = (e) => {
         e.preventDefault();
         smooth = true;
-        scrollTransformations(e.deltaX * WHEEL_SCALE, e.deltaY * WHEEL_SCALE);
+        scrollTransformations(e.deltaX * WHEEL_SCALE, -e.deltaY * WHEEL_SCALE);
     };
 
     const handleOnTouchMove = (e) => {
         const touch = e.touches[0];
+        const now = Date.now();
         const deltaX = touch.clientX - lastX;
         const deltaY = touch.clientY - lastY;
+
+        // Store touch history
+        touchHistory.push({
+            x: touch.clientX,
+            y: touch.clientY,
+            time: now
+        });
+
+        // Keep last N positions
+        if (touchHistory.length > VELOCITY_HISTORY) {
+            touchHistory.shift();
+        }
+
         smooth = false;
         scrollTransformations(deltaX, deltaY);
         lastX = touch.clientX;
@@ -119,48 +141,91 @@
         lastY = touch.clientY;
     };
 
-    const scrollTransformations = (deltaX, deltaY, anchor, index) => {
-        scrollDelta.x += direction !== 'y' ? deltaX : 0;
-        scrollDelta.y += direction !== 'x' ? deltaY : 0;
+    const handleOnTouchEnd = () => {
+        if (touchHistory.length < 2) return;
 
-        offset.x += deltaX;
-        offset.y += deltaY;
+        // Calculate final velocity
+        const lastTouch = touchHistory[touchHistory.length - 1];
+        const firstTouch = touchHistory[0];
+        const deltaTime = lastTouch.time - firstTouch.time;
 
-        if (deltaY > 0) {
-            console.log('scroll up');
-            // scroll up
-            if (_index > 0) {
-                if (
-                    offset.y > itemDimensions[_index - 1].height &&
-                    itemDimensions[_index - 1].height < containerBounds.height
-                ) {
-                    offset = { ...offset, y: offset.y - itemDimensions[_index - 1].height };
-                    _index--;
-                } else if (
-                    offset.y + containerBounds.height > itemDimensions[_index - 1].height &&
-                    itemDimensions[_index - 1].height > containerBounds.height
-                ) {
-                    offset = { ...offset, y: offset.y - itemDimensions[_index - 1].height };
-                    _index--;
-                }
-            }
+        if (deltaTime > 0) {
+            velocityX = ((lastTouch.x - firstTouch.x) / deltaTime) * 16;
+            velocityY = ((lastTouch.y - firstTouch.y) / deltaTime) * 16;
+
+            // Start momentum animation
+            animationFrame = requestAnimationFrame(applyMomentum);
         }
 
-        if (deltaY < 0) {
-            console.log('scroll down');
-            // scroll down
-            if (_index < length) {
-                if (offset.y < 0 && itemDimensions[_index].height < containerBounds.height) {
-                    offset = { ...offset, y: offset.y + itemDimensions[_index].height };
-                    _index++;
-                } else if (
-                    offset.y + containerBounds.height < 0 &&
-                    itemDimensions[_index].height < containerBounds.height
+        touchHistory = [];
+    };
+
+    const applyMomentum = () => {
+        if (Math.abs(velocityX) < MIN_VELOCITY && Math.abs(velocityY) < MIN_VELOCITY) {
+            cancelAnimationFrame(animationFrame);
+            return;
+        }
+
+        scrollTransformations(velocityX, velocityY);
+        velocityX *= FRICTION;
+        velocityY *= FRICTION;
+
+        animationFrame = requestAnimationFrame(applyMomentum);
+    };
+
+    const scrollTransformations = (deltaX, deltaY, anchor, index) => {
+        // Scale delta for wheel events
+        const scaledDeltaY = Math.sign(deltaY) * Math.min(Math.abs(deltaY), SCROLL_CHUNK_SIZE);
+
+        // Update scroll position
+        scrollDelta.x += direction !== 'y' ? deltaX : 0;
+        scrollDelta.y += direction !== 'x' ? scaledDeltaY : 0;
+
+        // Update offset with scaled delta
+        offset.x += deltaX;
+        offset.y += scaledDeltaY;
+
+        // Calculate total scroll distance
+        let remainingScroll = Math.abs(deltaY);
+        let scrollDirection = Math.sign(deltaY);
+
+        while (remainingScroll > 0 && (scrollDirection > 0 ? _index > 0 : _index < length - 1)) {
+            const currentHeight = itemDimensions[_index].height;
+            const targetHeight =
+                scrollDirection > 0
+                    ? itemDimensions[_index - 1].height
+                    : itemDimensions[_index + 1].height;
+
+            if (scrollDirection > 0) {
+                // Scrolling up
+                if (
+                    offset.y > targetHeight ||
+                    (offset.y + containerBounds.height > targetHeight &&
+                        targetHeight > containerBounds.height)
                 ) {
-                    offset = { ...offset, y: offset.y + itemDimensions[_index].height };
+                    offset.y -= targetHeight;
+                    _index--;
+                }
+            } else {
+                // Scrolling down
+                if (
+                    offset.y < 0 ||
+                    (offset.y + containerBounds.height < 0 &&
+                        currentHeight < containerBounds.height)
+                ) {
+                    offset.y += currentHeight;
                     _index++;
                 }
             }
+
+            remainingScroll -= SCROLL_CHUNK_SIZE;
+        }
+
+        // Apply momentum if large scroll
+        if (Math.abs(deltaY) > SCROLL_CHUNK_SIZE) {
+            requestAnimationFrame(() => {
+                scrollTransformations(0, deltaY * MOMENTUM_FACTOR, anchor, index);
+            });
         }
     };
 </script>
@@ -183,6 +248,7 @@
     onmousewheel={handleOnWheel}
     ontouchmove={handleOnTouchMove}
     ontouchstart={handleOnTouchStart}
+    ontouchend={handleOnTouchEnd}
 >
     <div style={`position: absolute; top: 0; z-index: 0;`}>
         {@render header()}
@@ -199,7 +265,6 @@
                     transform={d}
                     component={item}
                     index={d.index}
-                    {smooth}
                 />
             {/if}
         {/key}

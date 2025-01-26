@@ -5,7 +5,6 @@
         height = $bindable(undefined),
         transform = $bindable({ index: undefined, x: undefined, y: undefined }),
         loadDirection = 'down',
-        smooth = true,
         index
     } = $props();
 
@@ -21,7 +20,7 @@
 <div
     bind:offsetWidth={width}
     bind:offsetHeight={height}
-    style={`position: absolute; width: 100%; ${smooth ? 'transition: all 0.1s ease-in-out;' : ''} ${transformStyle}`}
+    style={`position: absolute; width: 100%; height: fit-content; ${transformStyle}`}
 >
     {@render component(index, loadDirection)}
 </div>
