@@ -1,6 +1,5 @@
 <script>
     import MagicItem from './MagicItem.svelte';
-    import CircularArray from './CircularArray';
     const BUFFER_ZONE = 25; // Content to buffer above and below current index
     const FULL_BUFFER = BUFFER_ZONE * 2;
     const VELOCITY_HISTORY = 5;
@@ -21,7 +20,6 @@
         index = $bindable(0),
         length,
         item,
-        placeholder,
         footer,
         direction = 'y',
         class: cn,
@@ -44,14 +42,13 @@
         let currentIndex = _index;
         let anchorY = offset?.y || 0;
 
-        // Create circular buffer
-        let tempTransformations = new CircularArray(FULL_BUFFER);
+        let tempTransformations = new Array(FULL_BUFFER);
 
-        tempTransformations.set(currentIndex, {
+        tempTransformations[currentIndex % FULL_BUFFER] = {
             index: currentIndex,
             x: 0,
             y: anchorY
-        });
+        };
 
         // Set positions above current index
         let upIndex = currentIndex - 1;
@@ -60,11 +57,11 @@
         if (upIndex >= 0) {
             while (upIndex >= 0 && upIndex > currentIndex - BUFFER_ZONE) {
                 const yTransform = itemDimensions[upIndex % FULL_BUFFER].height - upOffset || 0;
-                tempTransformations.set(upIndex, {
+                tempTransformations[upIndex % FULL_BUFFER] = {
                     index: upIndex,
                     x: 0,
                     y: -yTransform
-                });
+                };
                 upOffset -= itemDimensions[upIndex % FULL_BUFFER].height;
                 upIndex--;
             }
@@ -78,11 +75,11 @@
 
             while (upIndex < length && upIndex < currentIndex + BUFFER_ZONE) {
                 const yTransform = upOffset || 999999;
-                tempTransformations.set(upIndex, {
+                tempTransformations[upIndex % FULL_BUFFER] = {
                     index: upIndex,
                     x: 0,
                     y: yTransform
-                });
+                };
                 upOffset += itemDimensions[upIndex % FULL_BUFFER].height;
                 upIndex++;
             }

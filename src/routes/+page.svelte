@@ -17,10 +17,6 @@
     <h1>Footer</h1>
 {/snippet}
 
-{#snippet placeholder()}
-    <div class="placeholder"></div>
-{/snippet}
-
 {#snippet item(i, loadDirection)}
     <svelte:component this={Item} index={i} {loadDirection}></svelte:component>
 {/snippet}
@@ -60,7 +56,6 @@
         {header}
         {footer}
         {item}
-        {placeholder}
     ></MagicScroller>
 </div>
 
@@ -72,11 +67,5 @@
         overflow: hidden;
         top: 0;
         left: 0;
-    }
-
-    .placeholder {
-        height: 12px;
-        width: 36px;
-        background-color: gray;
     }
 </style>
