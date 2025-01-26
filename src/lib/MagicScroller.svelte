@@ -2,6 +2,7 @@
     import MagicItem from './MagicItem.svelte';
     import CircularArray from './CircularArray';
     const BUFFER_ZONE = 25; // Content to buffer above and below current index
+    const FULL_BUFFER = BUFFER_ZONE * 2;
     const VELOCITY_HISTORY = 5;
     const FRICTION = 0.95;
     const MIN_VELOCITY = 0.1;
@@ -28,7 +29,7 @@
     } = $props();
 
     let containerRef = $state(null);
-    let itemDimensions = $state(Array(length).fill({ width: 0, height: 0 }));
+    let itemDimensions = $state(Array(FULL_BUFFER).fill({ width: 0, height: 0 }));
     let lastX = $state(0);
     let lastY = $state(0);
     let scrollDelta = $state({ x: 0, y: 0 });
@@ -44,7 +45,7 @@
         let anchorY = offset?.y || 0;
 
         // Create circular buffer
-        let tempTransformations = new CircularArray(BUFFER_ZONE * 2);
+        let tempTransformations = new CircularArray(FULL_BUFFER);
 
         tempTransformations.set(currentIndex, {
             index: currentIndex,
@@ -58,13 +59,13 @@
 
         if (upIndex >= 0) {
             while (upIndex >= 0 && upIndex > currentIndex - BUFFER_ZONE) {
-                const yTransform = itemDimensions[upIndex].height - upOffset || 0;
+                const yTransform = itemDimensions[upIndex % FULL_BUFFER].height - upOffset || 0;
                 tempTransformations.set(upIndex, {
                     index: upIndex,
                     x: 0,
                     y: -yTransform
                 });
-                upOffset -= itemDimensions[upIndex].height;
+                upOffset -= itemDimensions[upIndex % FULL_BUFFER].height;
                 upIndex--;
             }
         }
@@ -73,7 +74,7 @@
         upIndex = currentIndex + 1;
 
         if (upIndex < length) {
-            upOffset = anchorY + itemDimensions[currentIndex].height;
+            upOffset = anchorY + itemDimensions[currentIndex % FULL_BUFFER].height;
 
             while (upIndex < length && upIndex < currentIndex + BUFFER_ZONE) {
                 const yTransform = upOffset || 999999;
@@ -82,7 +83,7 @@
                     x: 0,
                     y: yTransform
                 });
-                upOffset += itemDimensions[upIndex].height;
+                upOffset += itemDimensions[upIndex % FULL_BUFFER].height;
                 upIndex++;
             }
         }
@@ -107,7 +108,6 @@
 
     const handleOnWheel = (e) => {
         e.preventDefault();
-        smooth = true;
         scrollTransformations(e.deltaX * WHEEL_SCALE, -e.deltaY * WHEEL_SCALE);
     };
 
@@ -129,7 +129,6 @@
             touchHistory.shift();
         }
 
-        smooth = false;
         scrollTransformations(deltaX, deltaY);
         lastX = touch.clientX;
         lastY = touch.clientY;
@@ -190,11 +189,11 @@
         let scrollDirection = Math.sign(deltaY);
 
         while (remainingScroll > 0 && (scrollDirection > 0 ? _index > 0 : _index < length - 1)) {
-            const currentHeight = itemDimensions[_index].height;
+            const currentHeight = itemDimensions[_index % FULL_BUFFER].height;
             const targetHeight =
                 scrollDirection > 0
-                    ? itemDimensions[_index - 1].height
-                    : itemDimensions[_index + 1].height;
+                    ? itemDimensions[(_index - 1) % FULL_BUFFER].height
+                    : itemDimensions[(_index + 1) % FULL_BUFFER].height;
 
             if (scrollDirection > 0) {
                 // Scrolling up
@@ -238,7 +237,7 @@
         {JSON.stringify(offset)}
     </p>
     <p>
-        {JSON.stringify(itemDimensions[_index])}
+        {JSON.stringify(itemDimensions[_index % FULL_BUFFER])}
     </p>
 </div>
 <div
@@ -260,8 +259,8 @@
         {#key d?.index}
             {#if typeof d?.index === 'number' && d?.index >= 0 && d?.index < length}
                 <MagicItem
-                    bind:width={itemDimensions[d.index].width}
-                    bind:height={itemDimensions[d.index].height}
+                    bind:width={itemDimensions[d.index % FULL_BUFFER].width}
+                    bind:height={itemDimensions[d.index % FULL_BUFFER].height}
                     transform={d}
                     component={item}
                     index={d.index}
