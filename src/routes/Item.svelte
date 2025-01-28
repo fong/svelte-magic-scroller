@@ -46,7 +46,7 @@
         left: 0;
         position: absolute;
         top: 0;
-        width: 400px;
+        width: 100%;
     }
 
     .item {
@@ -61,7 +61,7 @@
         background: white;
         border-radius: 8px;
         box-shadow: 4px 4px 4px rgba(0, 0, 0, 0.3);
-        height: 460px;
+        aspect-ratio: 4/5;
         overflow: hidden;
         padding: 8px;
         position: relative;
@@ -77,7 +77,7 @@
         left: 0;
         position: absolute;
         top: 0;
-        width: 400px;
+        width: 100%;
     }
 
     .text-container {
