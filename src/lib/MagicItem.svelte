@@ -20,7 +20,7 @@
 <div
     bind:offsetWidth={width}
     bind:offsetHeight={height}
-    style={`position: absolute; width: 100%; height: fit-content; ${transformStyle}`}
+    style={`position: absolute; width: 100%; height: fit-content; will-change: transform; ${transformStyle}`}
 >
     {@render component(index, loadDirection)}
 </div>
