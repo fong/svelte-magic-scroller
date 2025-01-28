@@ -1,6 +1,6 @@
 <script>
     import MagicItem from './MagicItem.svelte';
-    const BUFFER_ZONE = 25; // Content to buffer above and below current index
+    const BUFFER_ZONE = 5; // Content to buffer above and below current index
     const FULL_BUFFER = BUFFER_ZONE * 2;
     const VELOCITY_HISTORY = 5;
     const FRICTION = 0.95;
@@ -36,7 +36,7 @@
     let lastX = $state(0);
     let lastY = $state(0);
     let scrollDelta = $state({ x: 0, y: 0 });
-    let _index = $state(2);
+    let _index = $state(0);
     let offset = $state({ x: 0, y: 0 });
     let touchHistory = $state([]);
     let velocityX = $state(0);
@@ -44,6 +44,7 @@
     let animationFrame = $state(null);
 
     let isOutOfBounds = $state(false);
+    let isMomentumScrolling = $state(false);
 
     let itemTransformations = $derived.by(() => {
         let currentIndex = _index;
@@ -139,9 +140,16 @@
     };
 
     const handleOnTouchStart = (e) => {
+        if (isMomentumScrolling) {
+            cancelAnimationFrame(animationFrame);
+            velocityX = 0;
+            velocityY = 0;
+            isMomentumScrolling = false;
+        }
         const touch = e.touches[0];
         lastX = touch.clientX;
         lastY = touch.clientY;
+        touchHistory = [];
     };
 
     const handleOnTouchEnd = () => {
@@ -166,9 +174,11 @@
     const applyMomentum = () => {
         if (Math.abs(velocityX) < MIN_VELOCITY && Math.abs(velocityY) < MIN_VELOCITY) {
             cancelAnimationFrame(animationFrame);
+            isMomentumScrolling = false;
             return;
         }
 
+        isMomentumScrolling = true;
         // Get current velocity magnitude
         const velocityMagnitude = Math.sqrt(velocityX * velocityX + velocityY * velocityY);
 

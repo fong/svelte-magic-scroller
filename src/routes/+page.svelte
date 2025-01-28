@@ -9,14 +9,6 @@
     let nextIndex = $state(Math.floor(Math.random() * length));
 </script>
 
-{#snippet header()}
-    <h1>Header</h1>
-{/snippet}
-
-{#snippet footer()}
-    <h1>Footer</h1>
-{/snippet}
-
 {#snippet item(i, loadDirection)}
     <svelte:component this={Item} index={i} {length} {loadDirection}></svelte:component>
 {/snippet}
@@ -45,13 +37,19 @@
     </button>
 </div>
 
-<div class="wrapper">
-    <MagicScroller bind:this={ref} width="420px" height="100%" bind:index {length} {item}
+<div class="demo-root">
+    <MagicScroller
+        bind:this={ref}
+        width="420px"
+        height="100%"
+        bind:index
+        {length}
+        {item}
     ></MagicScroller>
 </div>
 
 <style>
-    .wrapper {
+    .demo-root {
         position: absolute;
         width: 100svw;
         height: 100svh;
@@ -59,7 +57,20 @@
         display: flex;
         align-items: center;
         justify-content: center;
+        background: #f0f0f0;
         top: 0;
         left: 0;
+        font-family:
+            system-ui,
+            -apple-system,
+            BlinkMacSystemFont,
+            'Segoe UI',
+            Roboto,
+            Oxygen,
+            Ubuntu,
+            Cantarell,
+            'Open Sans',
+            'Helvetica Neue',
+            sans-serif;
     }
 </style>
