@@ -36,7 +36,6 @@
     let lastX = $state(0);
     let lastY = $state(0);
     let scrollDelta = $state({ x: 0, y: 0 });
-    let _index = $state(0);
     let offset = $state({ x: 0, y: 0 });
     let touchHistory = $state([]);
     let velocityX = $state(0);
@@ -47,7 +46,7 @@
     let isMomentumScrolling = $state(false);
 
     let itemTransformations = $derived.by(() => {
-        let currentIndex = _index;
+        let currentIndex = index;
         let anchorY = offset?.y || 0;
 
         let tempTransformations = new Array(FULL_BUFFER);
@@ -100,8 +99,10 @@
         console.log(targetIndex);
         if (!containerBounds || targetIndex < 0 || targetIndex >= length) return;
 
-        offset = options?.offset || { x: 0, y: 0 };
-        _index = targetIndex;
+        offset =
+            targetIndex === 0 && options?.offset.y > 0
+                ? { x: 0, y: 0 }
+                : options?.offset || { x: 0, y: 0 };
         index = targetIndex;
     };
 
@@ -201,10 +202,10 @@
         let scaledDeltaY = deltaY / 4;
 
         // Calculate boundaries
-        const isAtStart = _index === 0 && offset.y >= 0;
+        const isAtStart = index === 0 && offset.y >= 0;
         const isAtEnd =
-            _index === length - 1 &&
-            offset.y + itemDimensions[_index % FULL_BUFFER].height <= containerBounds.height; //;
+            index === length - 1 &&
+            offset.y + itemDimensions[index % FULL_BUFFER].height <= containerBounds.height; //;
 
         if (isTouch) {
             // Scale delta for wheel events
@@ -225,7 +226,7 @@
                 requestAnimationFrame(() => {
                     const targetY = isAtStart
                         ? 0
-                        : containerBounds.height - itemDimensions[_index % FULL_BUFFER].height;
+                        : containerBounds.height - itemDimensions[index % FULL_BUFFER].height;
                     const distance = targetY - offset.y;
 
                     if (Math.abs(distance) < 0.5) {
@@ -242,7 +243,7 @@
             if ((isAtStart && deltaY > 0) || (isAtEnd && deltaY < 0)) {
                 offset.y = isAtStart
                     ? 0
-                    : containerBounds.height - itemDimensions[_index % FULL_BUFFER].height;
+                    : containerBounds.height - itemDimensions[index % FULL_BUFFER].height;
             } else {
                 offset.y += scaledDeltaY;
                 scrollDelta.y = offset.y;
@@ -253,12 +254,12 @@
         let remainingScroll = Math.abs(deltaY);
         let scrollDirection = Math.sign(deltaY);
 
-        while (remainingScroll > 0 && (scrollDirection > 0 ? _index > 0 : _index < length - 1)) {
-            const currentHeight = itemDimensions[_index % FULL_BUFFER].height;
+        while (remainingScroll > 0 && (scrollDirection > 0 ? index > 0 : index < length - 1)) {
+            const currentHeight = itemDimensions[index % FULL_BUFFER].height;
             const targetHeight =
                 scrollDirection > 0
-                    ? itemDimensions[(_index - 1) % FULL_BUFFER].height
-                    : itemDimensions[(_index + 1) % FULL_BUFFER].height;
+                    ? itemDimensions[(index - 1) % FULL_BUFFER].height
+                    : itemDimensions[(index + 1) % FULL_BUFFER].height;
 
             if (scrollDirection > 0) {
                 // Scrolling up
@@ -268,7 +269,7 @@
                         targetHeight > containerBounds.height)
                 ) {
                     offset.y -= targetHeight;
-                    _index--;
+                    index--;
                 }
             } else {
                 // Scrolling down
@@ -278,7 +279,7 @@
                         currentHeight < containerBounds.height)
                 ) {
                     offset.y += currentHeight;
-                    _index++;
+                    index++;
                 }
             }
 
@@ -296,13 +297,13 @@
 
 <div style={'position: absolute; right: 0;'}>
     <p>
-        {_index}
+        Index: {index}
     </p>
     <p>
         {JSON.stringify(offset)}
     </p>
     <p>
-        {JSON.stringify(itemDimensions[_index % FULL_BUFFER])}
+        {JSON.stringify(itemDimensions[index % FULL_BUFFER])}
     </p>
 </div>
 <div

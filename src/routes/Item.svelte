@@ -19,20 +19,34 @@
     class="item"
     style={`padding: ${index === 0 ? `16px 16px 8px` : index === length - 1 ? `8px 16px 16px` : `8px 16px;`}`}
 >
-    <div class="card">
-        {#if index === 0}
-            <div class="title-card">
-                <h1>Svelte Magic Scroller</h1>
-                <h3>it's just an illusion</h3>
-                <br />
-                <b>Features:</b>
-                <ul>
-                    <li>No dimension limit to list size</li>
-                    <li>Dynamic item size</li>
-                    <li></li>
-                </ul>
-            </div>
-        {:else}
+    {#if index === 0}
+        <div class="title-card">
+            <h1>svelte magic scroller</h1>
+            <h3>it's just a bunch of illusions</h3>
+            <br />
+            <h5>Install</h5>
+            <p>todo</p>
+            <br />
+            <h5>Features:</h5>
+            <ul>
+                <li>
+                    No dimension limitations for virtualized lists <sub
+                        >(No more 33554400px browser limit)</sub
+                    >
+                </li>
+                <li>Fixed/Dynamic item sizes</li>
+                <li>Made for Svelte 5</li>
+            </ul>
+            <br />
+            <h5>Quirks:</h5>
+            <ul>
+                <li><code>goto</code> function does not support smooth scrolling</li>
+                <li>Absolute scrollbar positioning is unavailable</li>
+                <li>No support for iOS Safari status bar go to top tap</li>
+            </ul>
+        </div>
+    {:else}
+        <div class="card">
             <div class="image-container">
                 {#if loaded}
                     <img
@@ -52,8 +66,8 @@
                     Index #{index}
                 </h4>
             </div>
-        {/if}
-    </div>
+        </div>
+    {/if}
 </div>
 
 <style>
@@ -76,6 +90,34 @@
             font-size: 1.5rem;
             font-weight: 300;
             margin: 8px 0;
+        }
+
+        h5 {
+            font-size: 1.2rem;
+            font-weight: 600;
+            margin: 8px 0;
+            line-height: 1.25rem;
+            margin-block-start: 0rem;
+        }
+
+        ul {
+            padding: 0;
+            margin: 0;
+            margin-left: 16px;
+        }
+
+        li {
+            margin: 4px 0;
+        }
+
+        code {
+            background-color: lightgray;
+            padding: 2px 4px;
+        }
+
+        sub {
+            font-size: 0.75rem;
+            color: gray;
         }
     }
 
