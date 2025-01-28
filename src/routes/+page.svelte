@@ -18,7 +18,7 @@
 {/snippet}
 
 {#snippet item(i, loadDirection)}
-    <svelte:component this={Item} index={i} {loadDirection}></svelte:component>
+    <svelte:component this={Item} index={i} {length} {loadDirection}></svelte:component>
 {/snippet}
 
 <svelte:window bind:innerHeight={height} />
@@ -46,16 +46,7 @@
 </div>
 
 <div class="wrapper">
-    <MagicScroller
-        bind:this={ref}
-        width="50%"
-        height="50svh"
-        style={`margin-top: 25svh;`}
-        bind:index
-        {length}
-        {header}
-        {footer}
-        {item}
+    <MagicScroller bind:this={ref} width="420px" height="100%" bind:index {length} {item}
     ></MagicScroller>
 </div>
 
@@ -65,6 +56,9 @@
         width: 100svw;
         height: 100svh;
         overflow: hidden;
+        display: flex;
+        align-items: center;
+        justify-content: center;
         top: 0;
         left: 0;
     }

@@ -10,17 +10,22 @@
     const SCROLL_CHUNK_SIZE = 100;
     const MOMENTUM_FACTOR = 0.8;
 
+    const FRICTION_FAST = 0.99; // Very low friction for fast swipes
+    const FRICTION_MEDIUM = 0.98; // Medium friction for normal swipes
+    const FRICTION_SLOW = 0.95; // Higher friction for slow movement
+    const VELOCITY_FAST = 30; // Threshold for fast swipes
+    const VELOCITY_MEDIUM = 15; // Threshold for medium swipes
+    const VELOCITY_MULTIPLIER = 1.2; // Amplify initial velocity for better feel
+    const BOUNCE_DISTANCE = 100; // Max bounce distance in px
+    const BOUNCE_TENSION = 0.3; // Bounce resistance
+    const RETURN_SPEED = 0.15; // Speed of return animation
+
     let {
-        children,
         width,
         height,
-        header,
-        headerPlaceholder,
-        footerPlaceholder,
         index = $bindable(0),
         length,
         item,
-        footer,
         direction = 'y',
         class: cn,
         style: style
@@ -37,6 +42,8 @@
     let velocityX = $state(0);
     let velocityY = $state(0);
     let animationFrame = $state(null);
+
+    let isOutOfBounds = $state(false);
 
     let itemTransformations = $derived.by(() => {
         let currentIndex = _index;
@@ -126,7 +133,7 @@
             touchHistory.shift();
         }
 
-        scrollTransformations(deltaX, deltaY);
+        scrollTransformations(deltaX, deltaY, true);
         lastX = touch.clientX;
         lastY = touch.clientY;
     };
@@ -162,24 +169,75 @@
             return;
         }
 
-        scrollTransformations(velocityX, velocityY);
-        velocityX *= FRICTION;
-        velocityY *= FRICTION;
+        // Get current velocity magnitude
+        const velocityMagnitude = Math.sqrt(velocityX * velocityX + velocityY * velocityY);
+
+        // Select friction based on velocity
+        const currentFriction =
+            velocityMagnitude > VELOCITY_FAST
+                ? FRICTION_FAST
+                : velocityMagnitude > VELOCITY_MEDIUM
+                  ? FRICTION_MEDIUM
+                  : FRICTION_SLOW;
+
+        scrollTransformations(velocityX, velocityY, true);
+        velocityX *= currentFriction;
+        velocityY *= currentFriction;
 
         animationFrame = requestAnimationFrame(applyMomentum);
     };
 
-    const scrollTransformations = (deltaX, deltaY, anchor, index) => {
-        // Scale delta for wheel events
-        const scaledDeltaY = Math.sign(deltaY) * Math.min(Math.abs(deltaY), SCROLL_CHUNK_SIZE);
+    const scrollTransformations = (deltaX, deltaY, isTouch) => {
+        let scaledDeltaY = deltaY / 4;
 
-        // Update scroll position
-        scrollDelta.x += direction !== 'y' ? deltaX : 0;
-        scrollDelta.y += direction !== 'x' ? scaledDeltaY : 0;
+        // Calculate boundaries
+        const isAtStart = _index === 0 && offset.y >= 0;
+        const isAtEnd =
+            _index === length - 1 &&
+            offset.y + itemDimensions[_index % FULL_BUFFER].height <= containerBounds.height; //;
 
-        // Update offset with scaled delta
-        offset.x += deltaX;
-        offset.y += scaledDeltaY;
+        if (isTouch) {
+            // Scale delta for wheel events
+            scaledDeltaY = Math.sign(deltaY) * Math.min(Math.abs(deltaY), SCROLL_CHUNK_SIZE);
+
+            // Apply bounce effect
+            if (isAtStart || isAtEnd) {
+                offset.y += scaledDeltaY * BOUNCE_TENSION;
+                isOutOfBounds = true;
+            } else {
+                offset.y += scaledDeltaY;
+                scrollDelta.y = offset.y;
+                isOutOfBounds = false;
+            }
+
+            // Return to bounds if out of bounds
+            if (isOutOfBounds) {
+                requestAnimationFrame(() => {
+                    const targetY = isAtStart
+                        ? 0
+                        : containerBounds.height - itemDimensions[_index % FULL_BUFFER].height;
+                    const distance = targetY - offset.y;
+
+                    if (Math.abs(distance) < 0.5) {
+                        offset.y = targetY;
+                        isOutOfBounds = false;
+                    } else {
+                        offset.y += distance * RETURN_SPEED;
+                        requestAnimationFrame(applyMomentum);
+                    }
+                });
+            }
+        } else {
+            // Non-touch scrolling: hard limit
+            if ((isAtStart && deltaY > 0) || (isAtEnd && deltaY < 0)) {
+                offset.y = isAtStart
+                    ? 0
+                    : containerBounds.height - itemDimensions[_index % FULL_BUFFER].height;
+            } else {
+                offset.y += scaledDeltaY;
+                scrollDelta.y = offset.y;
+            }
+        }
 
         // Calculate total scroll distance
         let remainingScroll = Math.abs(deltaY);
@@ -220,7 +278,7 @@
         // Apply momentum if large scroll
         if (Math.abs(deltaY) > SCROLL_CHUNK_SIZE) {
             requestAnimationFrame(() => {
-                scrollTransformations(0, deltaY * MOMENTUM_FACTOR, anchor, index);
+                scrollTransformations(0, deltaY * MOMENTUM_FACTOR);
             });
         }
     };
@@ -240,18 +298,12 @@
 <div
     bind:this={containerRef}
     class={cn}
-    style={`width: ${width}; height: ${height}; overflow: visible; background: grey; position: relative; ${style}`}
+    style={`width: ${width}; height: ${height}; overflow: hidden; position: relative; ${style}`}
     onmousewheel={handleOnWheel}
     ontouchmove={handleOnTouchMove}
     ontouchstart={handleOnTouchStart}
     ontouchend={handleOnTouchEnd}
 >
-    <div style={`position: absolute; top: 0; z-index: 0;`}>
-        {@render header()}
-    </div>
-    <div style={`position: absolute; bottom: 0; z-index: 0;`}>
-        {@render footer()}
-    </div>
     {#each itemTransformations as d, i (i)}
         {#key d?.index}
             {#if typeof d?.index === 'number' && d?.index >= 0 && d?.index < length}
