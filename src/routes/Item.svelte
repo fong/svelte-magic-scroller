@@ -22,7 +22,7 @@
     {#if index === 0}
         <div class="title-card">
             <h1>svelte magic scroller</h1>
-            <h3>it's just a bunch of illusions</h3>
+            <h3>it's not real - it's just a bunch of illusions</h3>
             <br />
             <h5>Install</h5>
             <p>todo</p>
@@ -44,6 +44,17 @@
                 <li>Absolute scrollbar positioning is unavailable</li>
                 <li>No support for iOS Safari status bar go to top tap</li>
             </ul>
+            <br />
+            <h5>Notes:</h5>
+            <ul>
+                <li>
+                    By default, Safari will run page rendering at 60fps, this can feel a bit
+                    sluggish for users with high refresh rate / ProMotion (120hz) displays. To
+                    remove this limit, users will need to go to their settings and turn off <code
+                        >Advanced > Prefer Page Rendering Updates near 60fps</code
+                    >
+                </li>
+            </ul>
         </div>
     {:else}
         <div class="card">
@@ -57,7 +68,9 @@
                         transition:fade={{ duration: 150 }}
                     />
                 {:else}
-                    <div class="placeholder" alt={`Placeholder for Image ${index}`}></div>
+                    <div class="placeholder" alt={`Placeholder for Image ${index}`}>
+                        <div></div>
+                    </div>
                 {/if}
             </div>
 
@@ -138,30 +151,36 @@
         position: relative;
         transition: all 0.2s ease-in-out;
         width: auto;
+        justify-content: center;
+        display: flex;
+        max-width: 64rem;
     }
 
     .card {
         background: white;
         border-radius: 8px;
-        border: 2px solid #eee;
-        box-shadow: 8px 8px 8px rgba(0, 0, 0, 0.3);
+        border: 4px solid #222;
+        box-shadow: 8px 8px 0px #222;
         aspect-ratio: 6/7;
         overflow: hidden;
         padding: 8px;
         position: relative;
         display: flex;
+        width: 420px;
     }
 
     .placeholder {
-        animation: shimmer 1s infinite linear;
         aspect-ratio: 1 / 1;
-        background-position-x: 100%;
-        background-size: 300%;
-        background: linear-gradient(-45deg, #eee 40%, #fafafa 50%, #eee 60%);
         left: 0;
         position: absolute;
         top: 0;
         width: 100%;
+
+        /* animation */
+        animation: shimmer 1s infinite linear;
+        background: linear-gradient(-45deg, #eee 40%, #fafafa 50%, #eee 60%);
+        background-size: 300%;
+        background-position-x: 100%;
     }
 
     .text-container {

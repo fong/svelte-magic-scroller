@@ -4,7 +4,8 @@
         width = $bindable(undefined),
         height = $bindable(undefined),
         transform = $bindable({ index: undefined, x: undefined, y: undefined }),
-        loadDirection = 'down',
+        class: cn = '',
+        style = '',
         index
     } = $props();
 
@@ -21,10 +22,10 @@
 </script>
 
 <div
-    class="magic-scroller-item"
+    class="magic-scroller-item {cn}"
     bind:offsetWidth={width}
     bind:offsetHeight={height}
-    style={`${transformStyle}`}
+    style={`${style} ${transformStyle}`}
 >
     {@render component(index, loadDirection)}
 </div>

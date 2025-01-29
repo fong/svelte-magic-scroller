@@ -10,7 +10,7 @@
 </script>
 
 {#snippet item(i, loadDirection)}
-    <svelte:component this={Item} index={i} {length} {loadDirection}></svelte:component>
+    <svelte:component this={Item} index={i} {length}></svelte:component>
 {/snippet}
 
 <svelte:window bind:innerHeight={height} />
@@ -40,11 +40,12 @@
 <div class="demo-root">
     <MagicScroller
         bind:this={ref}
-        width="420px"
+        width="100%"
         height="100%"
         bind:index
         {length}
         {item}
+        itemStyle={`display: flex; justify-content: center;`}
     ></MagicScroller>
 </div>
 
@@ -57,7 +58,7 @@
         display: flex;
         align-items: center;
         justify-content: center;
-        background: #f0f0f0;
+        background: whitesmoke;
         top: 0;
         left: 0;
         font-family:

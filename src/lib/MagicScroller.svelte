@@ -27,8 +27,10 @@
         length,
         item,
         direction = 'y',
-        class: cn,
-        style: style
+        scrollerClass = '',
+        scrollerStyle = '',
+        itemClass = '',
+        itemStyle = ''
     } = $props();
 
     let containerRef = $state(null);
@@ -308,8 +310,8 @@
 </div>
 <div
     bind:this={containerRef}
-    class={cn}
-    style={`width: ${width}; height: ${height}; overflow: hidden; position: relative; ${style}`}
+    class={scrollerClass}
+    style={`width: ${width}; height: ${height}; overflow: hidden; position: relative; ${scrollerStyle}`}
     onmousewheel={handleOnWheel}
     ontouchmove={handleOnTouchMove}
     ontouchstart={handleOnTouchStart}
@@ -324,6 +326,8 @@
                     transform={d}
                     component={item}
                     index={d.index}
+                    class={itemClass}
+                    style={itemStyle}
                 />
             {/if}
         {/key}
