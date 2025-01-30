@@ -1,44 +1,59 @@
 <script>
     import MagicItem from './MagicItem.svelte';
-    const BUFFER_ZONE = 5; // Content to buffer above and below current index
-    const FULL_BUFFER = BUFFER_ZONE * 2;
-    const VELOCITY_HISTORY = 5;
-    const FRICTION = 0.95;
-    const MIN_VELOCITY = 0.1;
-    let containerBounds = $state(null);
-    const WHEEL_SCALE = 1.0;
-    const SCROLL_CHUNK_SIZE = 100;
-    const MOMENTUM_FACTOR = 0.8;
-
-    const FRICTION_FAST = 0.99; // Very low friction for fast swipes
-    const FRICTION_MEDIUM = 0.98; // Medium friction for normal swipes
-    const FRICTION_SLOW = 0.95; // Higher friction for slow movement
-    const VELOCITY_FAST = 30; // Threshold for fast swipes
-    const VELOCITY_MEDIUM = 15; // Threshold for medium swipes
-    const VELOCITY_MULTIPLIER = 1.2; // Amplify initial velocity for better feel
-    const BOUNCE_DISTANCE = 100; // Max bounce distance in px
-    const BOUNCE_TENSION = 0.3; // Bounce resistance
-    const RETURN_SPEED = 0.15; // Speed of return animation
 
     let {
         width,
         height,
         index = $bindable(0),
+        offset = $bindable({ x: 0, y: 0 }),
         length,
         item,
-        direction = 'y',
+        // direction = 'y',
         scrollerClass = '',
         scrollerStyle = '',
         itemClass = '',
-        itemStyle = ''
+        itemStyle = '',
+        config = {
+            buffer: 15,
+            momentum: 0.8,
+            friction: {
+                fast: 0.99,
+                medium: 0.98,
+                slow: 0.95
+            },
+            velocity: {
+                fast: 30,
+                medium: 15
+            },
+            bounce: {
+                tension: 0.3,
+                returnSpeed: 0.15
+            }
+        }
     } = $props();
 
+    const BUFFER_ZONE = config.buffer; // Content to buffer above and below current index
+    const FULL_BUFFER = BUFFER_ZONE * 2;
+    const VELOCITY_HISTORY = 5;
+    const MIN_VELOCITY = 0.1;
+    const SCROLL_CHUNK_SIZE = 100;
+    const MOMENTUM_FACTOR = 0.8;
+
+    const FRICTION_FAST = config.friction.fast; // Very low friction for fast swipes
+    const FRICTION_MEDIUM = config.friction.medium; // Medium friction for normal swipes
+    const FRICTION_SLOW = config.friction.slow; // Higher friction for slow movement
+    const VELOCITY_FAST = config.velocity.fast; // Threshold for fast swipes
+    const VELOCITY_MEDIUM = config.velocity.medium; // Threshold for medium swipes
+    const BOUNCE_TENSION = config.bounce.tension; // Bounce resistance
+    const RETURN_SPEED = config.bounce.returnSpeed; // Speed of return animation
+
+    let containerBounds = $state(null);
     let containerRef = $state(null);
     let itemDimensions = $state(Array(FULL_BUFFER).fill({ width: 0, height: 0 }));
     let lastX = $state(0);
     let lastY = $state(0);
     let scrollDelta = $state({ x: 0, y: 0 });
-    let offset = $state({ x: 0, y: 0 });
+    // let offset = $state({ x: 0, y: 0 });
     let touchHistory = $state([]);
     let velocityX = $state(0);
     let velocityY = $state(0);
@@ -98,7 +113,6 @@
     });
 
     export const goto = (targetIndex, options) => {
-        console.log(targetIndex);
         if (!containerBounds || targetIndex < 0 || targetIndex >= length) return;
 
         offset =
@@ -116,7 +130,7 @@
 
     const handleOnWheel = (e) => {
         e.preventDefault();
-        scrollTransformations(e.deltaX * WHEEL_SCALE, -e.deltaY * WHEEL_SCALE);
+        scrollTransformations(e.deltaX, -e.deltaY);
     };
 
     const handleOnTouchMove = (e) => {
@@ -297,17 +311,6 @@
     };
 </script>
 
-<div style={'position: absolute; right: 0;'}>
-    <p>
-        Index: {index}
-    </p>
-    <p>
-        {JSON.stringify(offset)}
-    </p>
-    <p>
-        {JSON.stringify(itemDimensions[index % FULL_BUFFER])}
-    </p>
-</div>
 <div
     bind:this={containerRef}
     class={scrollerClass}

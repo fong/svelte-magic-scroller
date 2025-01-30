@@ -22,39 +22,45 @@
     {#if index === 0}
         <div class="title-card">
             <h1>svelte magic scroller</h1>
-            <h3>it's not real - it's just a bunch of illusions</h3>
-            <br />
-            <h5>Install</h5>
-            <p>todo</p>
-            <br />
-            <h5>Features:</h5>
-            <ul>
-                <li>
-                    No dimension limitations for virtualized lists <sub
-                        >(No more 33554400px browser limit)</sub
-                    >
-                </li>
-                <li>Fixed/Dynamic item sizes</li>
-                <li>Made for Svelte 5</li>
-            </ul>
-            <br />
-            <h5>Quirks:</h5>
-            <ul>
-                <li><code>goto</code> function does not support smooth scrolling</li>
-                <li>Absolute scrollbar positioning is unavailable</li>
-                <li>No support for iOS Safari status bar go to top tap</li>
-            </ul>
-            <br />
-            <h5>Notes:</h5>
-            <ul>
-                <li>
-                    By default, Safari will run page rendering at 60fps, this can feel a bit
-                    sluggish for users with high refresh rate / ProMotion (120hz) displays. To
-                    remove this limit, users will need to go to their settings and turn off <code
-                        >Advanced > Prefer Page Rendering Updates near 60fps</code
-                    >
-                </li>
-            </ul>
+            <h3>it's not real - it's just magic</h3>
+        </div>
+    {:else if index > 0 && index < 5}
+        <div class="info-card">
+            {#if index === 1}
+                <h5>Install</h5>
+                <p>todo</p>
+            {:else if index === 2}
+                <h5>How to Use</h5>
+            {:else if index === 3}
+                <h5>Features:</h5>
+                <ul>
+                    <li>
+                        No dimension limitations for virtualized lists <sub
+                            >(No more 33554400px browser limits)</sub
+                        >
+                    </li>
+                    <li>Lazy loading</li>
+                    <li>Configurable scroll speed</li>
+                    <li>Fixed/Dynamic item sizes</li>
+                    <li>Made for Svelte 5</li>
+                </ul>
+            {:else if index === 4}
+                <h5>Quirks:</h5>
+                <ul>
+                    <li><code>goto</code> function does not support smooth scrolling</li>
+                    <li>
+                        Precise scrollbar positioning is unavailable (always snaps to top of items)
+                    </li>
+                    <li>No support for iOS Safari status bar go to top tap</li>
+                    <li>
+                        By default, Safari will run page rendering at 60fps, this can feel a bit
+                        sluggish for users with high refresh rate / ProMotion (120hz) displays. To
+                        remove this limit, users will need to go to their settings and turn off <code
+                            >Advanced > Prefer Page Rendering Updates near 60fps</code
+                        >
+                    </li>
+                </ul>
+            {/if}
         </div>
     {:else}
         <div class="card">
@@ -84,7 +90,8 @@
 </div>
 
 <style>
-    .title-card {
+    .title-card,
+    .info-card {
         align-items: left;
         flex-direction: column;
         display: flex;
@@ -92,6 +99,7 @@
         justify-content: start;
         width: 100%;
         padding: 8px;
+        max-width: 40rem;
 
         h1 {
             font-size: 3rem;
@@ -120,7 +128,7 @@
         }
 
         li {
-            margin: 4px 0;
+            margin: 8px 0;
         }
 
         code {
@@ -132,6 +140,16 @@
             font-size: 0.75rem;
             color: gray;
         }
+    }
+
+    .info-card {
+        border-radius: 8px;
+        border: 2px solid #22222222;
+        padding: 8px;
+        position: relative;
+        display: flex;
+        width: 100%;
+        max-width: 40rem;
     }
 
     .card-image {
@@ -153,7 +171,9 @@
         width: auto;
         justify-content: center;
         display: flex;
+        width: 100%;
         max-width: 64rem;
+        margin-bottom: 1rem;
     }
 
     .card {
