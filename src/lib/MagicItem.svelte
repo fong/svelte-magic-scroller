@@ -27,7 +27,7 @@
     bind:offsetHeight={height}
     style={`${style} ${transformStyle}`}
 >
-    {@render component(index, loadDirection)}
+    {@render component(index)}
 </div>
 
 <style>
