@@ -23,6 +23,15 @@
         <div class="title-card">
             <h1>svelte magic scroller</h1>
             <h3>it's not real - it's just magic</h3>
+
+            <p>
+                This package is a virtualized scroller which enables the scrolling of unlimited
+                items of unknown dimensions.
+            </p>
+            <p>
+                This page has a list of {length.toLocaleString()} items, including this intro section
+                and all the documentation sections.
+            </p>
         </div>
     {:else if index > 0 && index < 5}
         <div class="info-card">
@@ -40,6 +49,7 @@
                         >
                     </li>
                     <li>Lazy loading</li>
+                    <li>Low memory footprint</li>
                     <li>Configurable scroll speed</li>
                     <li>Fixed/Dynamic item sizes</li>
                     <li>Made for Svelte 5</li>
@@ -144,7 +154,7 @@
 
     .info-card {
         border-radius: 8px;
-        border: 2px solid #22222222;
+        border: 1px solid #22222222;
         padding: 8px;
         position: relative;
         display: flex;
@@ -186,7 +196,8 @@
         padding: 8px;
         position: relative;
         display: flex;
-        width: 420px;
+        width: 100%;
+        max-width: 420px;
     }
 
     .placeholder {
