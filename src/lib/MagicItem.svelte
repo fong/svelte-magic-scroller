@@ -32,13 +32,12 @@
 
 <style>
     .magic-scroller-item {
+        display: initial;
         position: absolute;
         width: 100%;
         height: fit-content;
-        will-change: transform;
-        perspective: 1000;
-        -webkit-perspective: 1000;
         backface-visibility: hidden;
         -webkit-backface-visibility: hidden;
+        -webkit-font-smoothing: subpixel-antialiased;
     }
 </style>
