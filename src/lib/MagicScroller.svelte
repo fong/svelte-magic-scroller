@@ -216,7 +216,6 @@
 
     const scrollTransformations = (deltaX, deltaY, isTouch) => {
         let scaledDeltaY = deltaY;
-
         // Calculate boundaries
         const isAtStart = index === 0 && offset.y >= 0;
         const isAtEnd =
@@ -304,7 +303,7 @@
         }
 
         // Apply momentum if large scroll
-        if (Math.abs(deltaY) > SCROLL_CHUNK_SIZE) {
+        if (Math.abs(deltaY) > SCROLL_CHUNK_SIZE && isTouch) {
             requestAnimationFrame(() => {
                 scrollTransformations(0, deltaY * MOMENTUM_FACTOR);
             });
