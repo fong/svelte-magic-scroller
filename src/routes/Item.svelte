@@ -21,15 +21,16 @@
 >
     {#if index === 0}
         <div class="title-card">
-            <h1>svelte magic scroller</h1>
-            <h3>it's not real - it's just magic</h3>
+            <h1>svelte-magic-scroller</h1>
+            <h3>It's not real - it's just magic</h3>
 
             <p>
                 This package is a virtualized scroller which enables the scrolling of unlimited
-                items of unknown dimensions.
+                items of unknown dimensions. Only items in the vicinity of the current viewport are
+                rendered.
             </p>
             <p>
-                This page has a list of {length.toLocaleString()} items, including this intro section
+                This page is a list of {length.toLocaleString()} items, including this intro section
                 and all the documentation sections.
             </p>
         </div>
@@ -59,11 +60,11 @@
                 <ul>
                     <li><code>goto</code> function does not support smooth scrolling</li>
                     <li>
-                        Precise scrollbar positioning is unavailable (always snaps to top of items)
+                        Precise scrollbar scrubbing is unavailable (always snaps to top of items)
                     </li>
-                    <li>No support for iOS Safari status bar go to top tap</li>
+                    <li>No support for iOS Safari status bar go to top tap action</li>
                     <li>
-                        By default, Safari will run page rendering at 60fps, this can feel a bit
+                        By default, Safari will run page rendering at 60fps which can feel a bit
                         sluggish for users with high refresh rate / ProMotion (120hz) displays. To
                         remove this limit, users will need to go to their settings and turn off <code
                             >Advanced > Prefer Page Rendering Updates near 60fps</code
@@ -92,7 +93,7 @@
 
             <div class="text-container">
                 <h4>
-                    Index #{index}
+                    Index #{index.toLocaleString()}
                 </h4>
             </div>
         </div>

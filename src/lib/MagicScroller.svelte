@@ -215,7 +215,7 @@
     };
 
     const scrollTransformations = (deltaX, deltaY, isTouch) => {
-        let scaledDeltaY = deltaY / 4;
+        let scaledDeltaY = deltaY / 2;
 
         // Calculate boundaries
         const isAtStart = index === 0 && offset.y >= 0;
