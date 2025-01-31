@@ -4,6 +4,7 @@
         width = $bindable(undefined),
         height = $bindable(undefined),
         transform = $bindable({ index: undefined, x: undefined, y: undefined }),
+        isTouchMove,
         class: cn = '',
         style = '',
         index
@@ -14,6 +15,7 @@
     $effect(() => {
         if (typeof transform?.x === 'number' && typeof transform?.y === 'number') {
             transformStyle = `
+                ${isTouchMove ? 'transition: none;' : 'transition: transform 0.2s ease-in-out;'}
                 transform: translate3d(${transform?.x}px, ${transform?.y}px, 0);
                 -webkit-transform: translate3d(${transform?.x}px, ${transform?.y}px, 0);
             `;

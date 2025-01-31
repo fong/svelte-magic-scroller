@@ -58,6 +58,7 @@
     let velocityX = $state(0);
     let velocityY = $state(0);
     let animationFrame = $state(null);
+    let isTouchMove = $state(true);
 
     let isOutOfBounds = $state(false);
     let isMomentumScrolling = $state(false);
@@ -130,10 +131,20 @@
 
     const handleOnWheel = (e) => {
         e.preventDefault();
+        isTouchMove = false;
+        // Check if wheel event is touchpad
+        if (e.wheelDeltaY) {
+            if (e.wheelDeltaY === e.deltaY * -3) {
+                isTouchMove = true;
+            }
+        } else if (e.deltaMode === 0) {
+            isTouchMove = true;
+        }
         scrollTransformations(e.deltaX, -e.deltaY);
     };
 
     const handleOnTouchMove = (e) => {
+        isTouchMove = true;
         const touch = e.touches[0];
         const now = Date.now();
         const deltaX = touch.clientX - lastX;
@@ -189,6 +200,8 @@
     };
 
     const applyMomentum = () => {
+        isTouchMove = true;
+
         if (Math.abs(velocityX) < MIN_VELOCITY && Math.abs(velocityY) < MIN_VELOCITY) {
             cancelAnimationFrame(animationFrame);
             isMomentumScrolling = false;
@@ -254,7 +267,6 @@
                 });
             }
         } else {
-            console.log('deltaY', deltaY);
             // Non-touch scrolling: hard limit
             if ((isAtStart && deltaY > 0) || (isAtEnd && deltaY < 0)) {
                 offset.y = isAtStart
@@ -305,6 +317,7 @@
         // Apply momentum if large scroll
         if (Math.abs(deltaY) > SCROLL_CHUNK_SIZE && isTouch) {
             requestAnimationFrame(() => {
+                isTouchMove = true;
                 scrollTransformations(0, deltaY * MOMENTUM_FACTOR);
             });
         }
@@ -329,6 +342,7 @@
                     transform={d}
                     component={item}
                     index={d.index}
+                    {isTouchMove}
                     class={itemClass}
                     style={itemStyle}
                 />
