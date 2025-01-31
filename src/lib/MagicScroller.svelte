@@ -215,7 +215,7 @@
     };
 
     const scrollTransformations = (deltaX, deltaY, isTouch) => {
-        let scaledDeltaY = deltaY / 2;
+        let scaledDeltaY = deltaY;
 
         // Calculate boundaries
         const isAtStart = index === 0 && offset.y >= 0;
@@ -255,6 +255,7 @@
                 });
             }
         } else {
+            console.log('deltaY', deltaY);
             // Non-touch scrolling: hard limit
             if ((isAtStart && deltaY > 0) || (isAtEnd && deltaY < 0)) {
                 offset.y = isAtStart
