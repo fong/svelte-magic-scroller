@@ -116,6 +116,13 @@
     export const goto = (targetIndex, options) => {
         if (!containerBounds || targetIndex < 0 || targetIndex >= length) return;
 
+        if (isMomentumScrolling) {
+            cancelAnimationFrame(animationFrame);
+            velocityX = 0;
+            velocityY = 0;
+            isMomentumScrolling = false;
+        }
+
         offset =
             targetIndex === 0 && options?.offset.y > 0
                 ? { x: 0, y: 0 }
