@@ -58,7 +58,10 @@
             {:else if index === 4}
                 <h5>Quirks:</h5>
                 <ul>
-                    <li><code>goto</code> function does not support smooth scrolling</li>
+                    <li>
+                        <code>goto</code> function does not support smooth scrolling for big jumps, only
+                        for items already on the buffer
+                    </li>
                     <li>
                         Precise scrollbar scrubbing is unavailable (always snaps to top of items)
                     </li>

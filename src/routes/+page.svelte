@@ -12,8 +12,8 @@
     const sections = ['Top', 'Install', 'How to Use', 'Features', 'Quirks'];
 </script>
 
-{#snippet item(i, loadDirection)}
-    <svelte:component this={Item} index={i} {length}></svelte:component>
+{#snippet item(i)}
+    <Item index={i} {length} parent={ref} />
 {/snippet}
 
 <svelte:window bind:innerHeight={height} />
@@ -37,6 +37,18 @@
             nextIndex = Math.floor(Math.random() * length);
         }}
         >Go to Random
+    </button>
+    <button
+        onclick={() => {
+            ref?.goto(length - 3, { offset: { x: 0, y: 32 } });
+        }}
+        >3rd last Item
+    </button>
+    <button
+        onclick={() => {
+            ref?.goto(length - 2, { offset: { x: 0, y: 32 } });
+        }}
+        >2nd last Item
     </button>
     <button
         onclick={() => {

@@ -1,5 +1,6 @@
 <script>
     import MagicItem from './MagicItem.svelte';
+    import { tick } from 'svelte';
 
     let {
         width,
@@ -113,21 +114,69 @@
         return tempTransformations;
     });
 
-    export const goto = (targetIndex, options) => {
-        if (!containerBounds || targetIndex < 0 || targetIndex >= length) return;
-
+    const cancelMomentumScrolling = () => {
         if (isMomentumScrolling) {
             cancelAnimationFrame(animationFrame);
             velocityX = 0;
             velocityY = 0;
             isMomentumScrolling = false;
         }
+    };
 
-        offset =
-            targetIndex === 0 && options?.offset.y > 0
-                ? { x: 0, y: 0 }
-                : options?.offset || { x: 0, y: 0 };
-        index = targetIndex;
+    export const goto = (targetIndex, options) => {
+        if (!containerBounds || targetIndex < 0 || targetIndex >= length) return;
+        cancelMomentumScrolling();
+
+        tick().then(() => {
+            isTouchMove = false;
+            if (targetIndex === 0 && options?.offset.y > 0) {
+                index = targetIndex;
+                offset = { x: 0, y: 0 };
+            } else if (targetIndex === length - 1) {
+                index = targetIndex;
+                offset = {
+                    x: 0,
+                    y: 0
+                };
+                tick().then(() => {
+                    // hack to force recalculation for itemTransformations, index and offsets
+                    scrollTransformations(-1);
+                });
+            } else {
+                // Check remaining height from end of list to target
+                let remainingHeight = 0;
+                if (length - BUFFER_ZONE < targetIndex) {
+                    // first load items around index to get item bounds
+                    index = targetIndex;
+                    offset = {
+                        x: 0,
+                        y: 0
+                    };
+                    tick().then(() => {
+                        for (let i = length - 1; i >= targetIndex; i--) {
+                            remainingHeight += itemDimensions[i % FULL_BUFFER].height;
+                        }
+                        // If remaining height is less than container, adjust offset
+                        const proposedOffset = options?.offset?.y || 0;
+                        if (remainingHeight + proposedOffset <= containerBounds.height) {
+                            index = length - 1;
+                            offset = {
+                                x: 0,
+                                y: 0
+                            };
+                            tick().then(() => {
+                                // hack to force recalculation for itemTransformations, index and offsets
+                                scrollTransformations(-1);
+                            });
+                        }
+                    });
+                } else {
+                    index = targetIndex;
+                    offset = options?.offset || { x: 0, y: 0 };
+                }
+            }
+        });
+        isTouchMove = true;
     };
 
     $effect(() => {
@@ -138,16 +187,17 @@
 
     const handleOnWheel = (e) => {
         e.preventDefault();
-        isTouchMove = false;
-        // Check if wheel event is touchpad
-        if (e.wheelDeltaY) {
-            if (e.wheelDeltaY === e.deltaY * -3) {
+        // Check if wheel event is mousewheel (large magnitude) and enable animations
+        if (Math.abs(e.deltaY) > 90) {
+            isTouchMove = false;
+            scrollTransformations(-e.deltaY);
+            tick(() => {
                 isTouchMove = true;
-            }
-        } else if (e.deltaMode === 0) {
+            });
+        } else {
             isTouchMove = true;
+            scrollTransformations(-e.deltaY, true);
         }
-        scrollTransformations(e.deltaX, -e.deltaY);
     };
 
     const handleOnTouchMove = (e) => {
@@ -169,18 +219,13 @@
             touchHistory.shift();
         }
 
-        scrollTransformations(deltaX, deltaY, true);
+        scrollTransformations(deltaY, true);
         lastX = touch.clientX;
         lastY = touch.clientY;
     };
 
     const handleOnTouchStart = (e) => {
-        if (isMomentumScrolling) {
-            cancelAnimationFrame(animationFrame);
-            velocityX = 0;
-            velocityY = 0;
-            isMomentumScrolling = false;
-        }
+        cancelMomentumScrolling();
         const touch = e.touches[0];
         lastX = touch.clientX;
         lastY = touch.clientY;
@@ -196,8 +241,8 @@
         const deltaTime = lastTouch.time - firstTouch.time;
 
         if (deltaTime > 0) {
-            velocityX = ((lastTouch.x - firstTouch.x) / deltaTime) * 16;
-            velocityY = ((lastTouch.y - firstTouch.y) / deltaTime) * 16;
+            velocityX = ((lastTouch.x - firstTouch.x) / deltaTime) * 16 || 0;
+            velocityY = ((lastTouch.y - firstTouch.y) / deltaTime) * 16 || 0;
 
             // Start momentum animation
             animationFrame = requestAnimationFrame(applyMomentum);
@@ -227,14 +272,14 @@
                   ? FRICTION_MEDIUM
                   : FRICTION_SLOW;
 
-        scrollTransformations(velocityX, velocityY, true);
+        scrollTransformations(velocityY, true);
         velocityX *= currentFriction;
         velocityY *= currentFriction;
 
         animationFrame = requestAnimationFrame(applyMomentum);
     };
 
-    const scrollTransformations = (deltaX, deltaY, isTouch) => {
+    const scrollTransformations = (deltaY, isTouch) => {
         let scaledDeltaY = deltaY;
         // Calculate boundaries
         const isAtStart = index === 0 && offset.y >= 0;
@@ -289,6 +334,7 @@
         let remainingScroll = Math.abs(deltaY);
         let scrollDirection = Math.sign(deltaY);
 
+        // Calculate new current index and offset
         while (remainingScroll > 0 && (scrollDirection > 0 ? index > 0 : index < length - 1)) {
             const currentHeight = itemDimensions[index % FULL_BUFFER].height;
             const targetHeight =
@@ -325,7 +371,7 @@
         if (Math.abs(deltaY) > SCROLL_CHUNK_SIZE && isTouch) {
             requestAnimationFrame(() => {
                 isTouchMove = true;
-                scrollTransformations(0, deltaY * MOMENTUM_FACTOR);
+                scrollTransformations(deltaY * MOMENTUM_FACTOR);
             });
         }
     };
