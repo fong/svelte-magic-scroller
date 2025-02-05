@@ -375,7 +375,16 @@
             });
         }
     };
+
+    const handleResize = () => {
+        if (containerBounds) {
+            containerBounds = containerRef.getBoundingClientRect();
+            scrollTransformations(0, true);
+        }
+    };
 </script>
+
+<svelte:window onresize={handleResize} />
 
 <div
     bind:this={containerRef}
