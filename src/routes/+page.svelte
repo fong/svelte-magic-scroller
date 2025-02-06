@@ -2,7 +2,7 @@
     import MagicScroller from '$lib/MagicScroller.svelte';
     import Item from './Item.svelte';
 
-    const length = 3000000000000;
+    const length = 5000000000000;
     let height = $state(56);
     let index = $state(0);
     let offset = $state({ x: 0, y: 0 });

@@ -24,6 +24,12 @@
         loaded = false;
         img.src = ''; // cancel network request for image
     });
+
+    function writeScientificNum(p_num, p_precision) {
+        var n = Math.floor(Math.log10(p_num));
+        var m = (p_num / Math.pow(10, Math.abs(n))).toLocaleString();
+        return m.toString() + ' x 10<sup>' + n.toString() + '</sup>';
+    }
 </script>
 
 <div
@@ -41,29 +47,35 @@
                 rendered.
             </p>
             <p>
-                This page is a list of {length.toLocaleString()} items, including this intro section
-                and all the documentation sections.
+                This page is a list of {@html writeScientificNum(length, 3)} items, including this intro
+                section and all the documentation sections.
             </p>
         </div>
     {:else if index > 0 && index < 5}
         <div class="info-card">
             {#if index === 1}
                 <h5>Install</h5>
-                <p>todo</p>
+                <b>npm</b>
+                <p><code>npm install svelte-magic-scroller</code></p>
+                <b>yarn</b>
+                <p><code>yarn i svelte-magic-scroller</code></p>
+                <b>pnpm</b>
+                <p><code>pnpm i svelte-magic-scroller</code></p>
             {:else if index === 2}
                 <h5>How to Use</h5>
             {:else if index === 3}
                 <h5>Features:</h5>
                 <ul>
                     <li>
-                        No dimension limitations for virtualized lists <sub
-                            >(No more 33554400px browser limits)</sub
+                        No restrictions for dimensions of virtualized list <span
+                            >(bypass 33554400px browser dimension limit)</span
                         >
                     </li>
                     <li>Lazy loading</li>
                     <li>Low memory footprint</li>
                     <li>Configurable scroll speed</li>
                     <li>Fixed/Dynamic item sizes</li>
+                    <li>Middle mouse button drag scroll support</li>
                     <li>Made for Svelte 5</li>
                 </ul>
             {:else if index === 4}
