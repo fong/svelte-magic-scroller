@@ -204,9 +204,7 @@
     };
 
     const handleOnMouseDown = (e) => {
-        console.log(e);
         if (e.button === 1) {
-            // Middle mouse button
             isMiddleMouseDown = true;
             middleMouseStartX = e.clientX;
             middleMouseStartY = e.clientY;
@@ -239,7 +237,6 @@
 
     const handleOnMouseUp = (e) => {
         if (e.button === 1) {
-            // Middle mouse button
             isMiddleMouseDown = false;
             cancelAnimationFrame(animationFrame);
         }
