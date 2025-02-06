@@ -1,17 +1,28 @@
 <script>
-    import { onMount } from 'svelte';
+    import { onDestroy, onMount } from 'svelte';
     import { fade } from 'svelte/transition';
 
     let { index, length, loaded = $bindable(false) } = $props();
 
     const src = `https://picsum.photos/seed/${index}/600/600`;
+    const img = new Image();
+    let delayedLoad = $state();
 
     onMount(() => {
-        const img = new Image();
-        img.src = src;
-        img.onload = () => {
-            loaded = true;
-        };
+        // delay image loading so that network requests are throttled
+        // only load if item is in buffer for enough time
+        delayedLoad = setTimeout(() => {
+            img.src = src;
+            img.onload = () => {
+                loaded = true;
+            };
+        }, 150);
+    });
+
+    onDestroy(() => {
+        clearTimeout(delayedLoad);
+        loaded = false;
+        img.src = ''; // cancel network request for image
     });
 </script>
 

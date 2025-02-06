@@ -60,6 +60,9 @@
     let velocityY = $state(0);
     let animationFrame = $state(null);
     let isTouchMove = $state(true);
+    let isMiddleMouseDown = $state(false);
+    let middleMouseStartX = $state(0);
+    let middleMouseStartY = $state(0);
 
     let isOutOfBounds = $state(false);
     let isMomentumScrolling = $state(false);
@@ -197,6 +200,48 @@
         } else {
             isTouchMove = true;
             scrollTransformations(-e.deltaY, true);
+        }
+    };
+
+    const handleOnMouseDown = (e) => {
+        console.log(e);
+        if (e.button === 1) {
+            // Middle mouse button
+            isMiddleMouseDown = true;
+            middleMouseStartX = e.clientX;
+            middleMouseStartY = e.clientY;
+            e.preventDefault();
+        }
+    };
+
+    const handleOnMouseMove = (e) => {
+        if (isMiddleMouseDown) {
+            const deltaX = e.clientX - middleMouseStartX;
+            const deltaY = e.clientY - middleMouseStartY;
+            animationFrame = requestAnimationFrame(() => {
+                if (index === 0 && offset.y <= 0 && deltaY > 0) {
+                    return;
+                }
+
+                if (
+                    index === length - 1 &&
+                    offset.y + itemDimensions[index % FULL_BUFFER].height >=
+                        containerBounds.height &&
+                    deltaY < 0
+                ) {
+                    return;
+                }
+                scrollTransformations(deltaY, true);
+                handleOnMouseMove(e);
+            });
+        }
+    };
+
+    const handleOnMouseUp = (e) => {
+        if (e.button === 1) {
+            // Middle mouse button
+            isMiddleMouseDown = false;
+            cancelAnimationFrame(animationFrame);
         }
     };
 
@@ -389,8 +434,11 @@
 <div
     bind:this={containerRef}
     class={scrollerClass}
-    style={`width: ${width}; height: ${height}; overflow: hidden; position: relative; ${scrollerStyle}`}
+    style={`width: ${width}; height: ${height}; overflow: hidden; position: relative; cur ${scrollerStyle}`}
     onmousewheel={handleOnWheel}
+    onmousedown={handleOnMouseDown}
+    onmousemove={handleOnMouseMove}
+    onmouseup={handleOnMouseUp}
     ontouchmove={handleOnTouchMove}
     ontouchstart={handleOnTouchStart}
     ontouchend={handleOnTouchEnd}
