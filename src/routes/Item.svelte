@@ -5,13 +5,14 @@
     let { index, length, loaded = $bindable(false) } = $props();
 
     const src = `https://picsum.photos/seed/${index}/600/600`;
-    const img = new Image();
+    let img = $state();
     let delayedLoad = $state();
 
     onMount(() => {
         // delay image loading so that network requests are throttled
         // only load if item is in buffer for enough time
         delayedLoad = setTimeout(() => {
+            img = new Image();
             img.src = src;
             img.onload = () => {
                 loaded = true;
@@ -22,7 +23,9 @@
     onDestroy(() => {
         clearTimeout(delayedLoad);
         loaded = false;
-        img.src = ''; // cancel network request for image
+        if (img?.src) {
+            img.src = ''; // cancel network request for image
+        }
     });
 
     function writeScientificNum(p_num, p_precision) {
