@@ -1,5 +1,7 @@
 <script>
+    import MagicScrollbar from '$lib/MagicScrollbar/MagicScrollbar.svelte';
     import MagicScroller from '$lib/MagicScroller.svelte';
+    import { magicscrollbar } from '$lib/magicscrollbar.svelte.js';
     import Item from './Item.svelte';
 
     const length = 5000000000000;
@@ -8,17 +10,40 @@
     let offset = $state({ x: 0, y: 0 });
     let ref = $state();
     let nextIndex = $state(Math.floor(Math.random() * length));
+    let scrollIndex = $state(0);
 
     const sections = ['Top', 'Install', 'How to Use', 'Features', 'Quirks'];
+
+    $effect(() => {
+        ref?.goto(scrollIndex);
+    });
 </script>
 
 {#snippet item(i)}
     <Item index={i} {length} parent={ref} />
 {/snippet}
 
+{#snippet track(children)}
+    <div style={`height: 100%; width: 14px; background: #ccc;`}>
+        {@render children()}
+    </div>
+{/snippet}
+
+{#snippet thumb()}
+    <div
+        style={'height: 36px; width: 10px; background: #555; user-select: none; border-radius: 6px;'}
+    ></div>
+{/snippet}
+
 <svelte:window bind:innerHeight={height} />
 
 <div style={`position: absolute; z-index: 100; display: flex; flex-direction: column;`}>
+    <div class="info">
+        <p>
+            Current: {index}
+        </p>
+        <p>Offset: {offset.y.toFixed(2)}</p>
+    </div>
     {#each sections as section, i}
         <button
             onclick={() => {
@@ -68,6 +93,8 @@
         {item}
         itemStyle={`display: flex; justify-content: center;`}
     ></MagicScroller>
+    <MagicScrollbar {track} {thumb} bind:scrollIndex size={length}></MagicScrollbar>
+    <div style={`position: absolute; top: 0; left: 0;`}>{scrollIndex}</div>
 </div>
 
 <style>
@@ -118,5 +145,24 @@
             'Open Sans',
             'Helvetica Neue',
             sans-serif;
+    }
+
+    .info {
+        font-size: 0.8rem;
+        font-family:
+            system-ui,
+            -apple-system,
+            BlinkMacSystemFont,
+            'Segoe UI',
+            Roboto,
+            Oxygen,
+            Ubuntu,
+            Cantarell,
+            'Open Sans',
+            'Helvetica Neue',
+            sans-serif;
+        p {
+            margin: 0;
+        }
     }
 </style>

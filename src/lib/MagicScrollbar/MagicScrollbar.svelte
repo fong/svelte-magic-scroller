@@ -1,0 +1,46 @@
+<script>
+    import MagicScrollbarThumb from './MagicScrollbarThumb.svelte';
+    import MagicScrollbarTrack from './MagicScrollbarTrack.svelte';
+
+    let isDragging = $state(false);
+    let thumbPosition = $state(0);
+    let trackHeight = $state(0);
+    let trackWidth = $state(0);
+    let thumbHeight = $state(0);
+    let minThumbTravel = $state(0);
+    let maxThumbTravel = $state(0);
+    let startY = $state(0);
+    let currentY = $state(0);
+
+    let {
+        track,
+        thumb,
+        size,
+        offset = { top: 2, bottom: 2 },
+        scrollIndex = $bindable(0)
+    } = $props();
+</script>
+
+<MagicScrollbarTrack
+    component={track}
+    bind:thumbPosition
+    bind:thumbHeight
+    bind:minThumbTravel
+    bind:maxThumbTravel
+    height={trackHeight}
+    width={trackWidth}
+    {size}
+    {offset}
+>
+    <MagicScrollbarThumb
+        component={thumb}
+        bind:currentIndex={scrollIndex}
+        {size}
+        {minThumbTravel}
+        {maxThumbTravel}
+        {thumbPosition}
+        {isDragging}
+        {startY}
+        {currentY}
+    ></MagicScrollbarThumb>
+</MagicScrollbarTrack>
