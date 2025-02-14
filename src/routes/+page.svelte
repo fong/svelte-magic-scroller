@@ -1,7 +1,6 @@
 <script>
     import MagicScrollbar from '$lib/MagicScrollbar/MagicScrollbar.svelte';
     import MagicScroller from '$lib/MagicScroller.svelte';
-    import { magicscrollbar } from '$lib/magicscrollbar.svelte.js';
     import Item from './Item.svelte';
 
     const length = 5000000000000;
