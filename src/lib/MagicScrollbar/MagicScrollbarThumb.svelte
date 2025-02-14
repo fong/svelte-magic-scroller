@@ -13,14 +13,17 @@
         startY = $bindable(0),
         currentY = $bindable(0),
         currentIndex = $bindable(0),
-        size
+        size,
+        goto
     } = $props();
 
     let node = $state(null);
+    let scrollIndex = $state(0);
 
     const init = () => {
         thumbPosition = Math.max(minThumbTravel, Math.min(maxThumbTravel - height, thumbPosition));
         thumbHeight = height;
+        scrollIndex = currentIndex;
     };
 
     const onTrackDragStart = (e) => {
@@ -35,7 +38,17 @@
             (thumbPosition - minThumbTravel) / (maxThumbTravel - height - minThumbTravel);
 
         // Map to index range and round
-        currentIndex = Math.round(percentComplete * (size - 1));
+        scrollIndex = Math.round(percentComplete * (size - 1));
+        goto(scrollIndex);
+    };
+
+    const updateScrollPosition = () => {
+        scrollIndex = currentIndex;
+        const percentComplete = currentIndex / (size - 1);
+        thumbPosition = Math.max(
+            minThumbTravel,
+            Math.min(maxThumbTravel - height, percentComplete * (maxThumbTravel - height))
+        );
     };
 
     const onTrackDragMove = (e) => {
@@ -77,6 +90,10 @@
 
     $effect(() => {
         init();
+    });
+
+    $effect(() => {
+        updateScrollPosition();
     });
 </script>
 

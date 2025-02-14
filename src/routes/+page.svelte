@@ -3,19 +3,14 @@
     import MagicScroller from '$lib/MagicScroller.svelte';
     import Item from './Item.svelte';
 
-    const length = 5000000000000;
+    let length = $state(5000000000000);
     let height = $state(56);
     let index = $state(0);
     let offset = $state({ x: 0, y: 0 });
     let ref = $state();
     let nextIndex = $state(Math.floor(Math.random() * length));
-    let scrollIndex = $state(0);
 
     const sections = ['Top', 'Install', 'How to Use', 'Features', 'Quirks'];
-
-    $effect(() => {
-        ref?.goto(scrollIndex);
-    });
 </script>
 
 {#snippet item(i)}
@@ -23,7 +18,7 @@
 {/snippet}
 
 {#snippet track(children)}
-    <div style={`height: 100%; width: 14px; background: #ccc;`}>
+    <div style={`height: 100%; width: 15px; background: #ccc;`}>
         {@render children()}
     </div>
 {/snippet}
@@ -43,6 +38,8 @@
         </p>
         <p>Offset: {offset.y.toFixed(2)}</p>
     </div>
+    <label for="list-size">Number of Items</label>
+    <input id="list-size" bind:value={length} type="number" />
     {#each sections as section, i}
         <button
             onclick={() => {
@@ -92,12 +89,26 @@
         {item}
         itemStyle={`display: flex; justify-content: center;`}
     ></MagicScroller>
-    <MagicScrollbar {track} {thumb} bind:scrollIndex size={length}></MagicScrollbar>
-    <div style={`position: absolute; top: 0; left: 0;`}>{scrollIndex}</div>
+    <MagicScrollbar {track} {thumb} bind:index goto={ref?.goto} size={length}></MagicScrollbar>
 </div>
 
 <style>
-    sub {
+    * {
+        font-family:
+            system-ui,
+            -apple-system,
+            BlinkMacSystemFont,
+            'Segoe UI',
+            Roboto,
+            Oxygen,
+            Ubuntu,
+            Cantarell,
+            'Open Sans',
+            'Helvetica Neue',
+            sans-serif;
+    }
+
+    label {
         font-size: 0.75rem;
         font-weight: 400;
         color: gray;
@@ -132,34 +143,12 @@
         background: whitesmoke;
         top: 0;
         left: 0;
-        font-family:
-            system-ui,
-            -apple-system,
-            BlinkMacSystemFont,
-            'Segoe UI',
-            Roboto,
-            Oxygen,
-            Ubuntu,
-            Cantarell,
-            'Open Sans',
-            'Helvetica Neue',
-            sans-serif;
     }
 
     .info {
         font-size: 0.8rem;
-        font-family:
-            system-ui,
-            -apple-system,
-            BlinkMacSystemFont,
-            'Segoe UI',
-            Roboto,
-            Oxygen,
-            Ubuntu,
-            Cantarell,
-            'Open Sans',
-            'Helvetica Neue',
-            sans-serif;
+        color: gray;
+
         p {
             margin: 0;
         }

@@ -17,7 +17,8 @@
         thumb,
         size,
         offset = { top: 2, bottom: 2 },
-        scrollIndex = $bindable(0)
+        index = $bindable(0),
+        goto
     } = $props();
 </script>
 
@@ -34,7 +35,7 @@
 >
     <MagicScrollbarThumb
         component={thumb}
-        bind:currentIndex={scrollIndex}
+        bind:currentIndex={index}
         {size}
         {minThumbTravel}
         {maxThumbTravel}
@@ -42,5 +43,6 @@
         {isDragging}
         {startY}
         {currentY}
+        {goto}
     ></MagicScrollbarThumb>
 </MagicScrollbarTrack>
