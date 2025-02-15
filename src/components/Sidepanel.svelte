@@ -27,7 +27,7 @@
 
     const checkCurrentIndex = () => {
         if (index >= length && length > 0) {
-            ref?.goto(length - 1, { offset: { x: 0, y: 32 } });
+            ref?.goto(length - 1, { offset: { x: 0, y: 56 } });
         }
     };
 </script>
@@ -60,7 +60,7 @@
         {#each sections as section, i}
             <button
                 onclick={() => {
-                    ref?.goto(i, { offset: { x: 0, y: 32 } });
+                    ref?.goto(i, { offset: { x: 0, y: 56 } });
                     isSidepanelOpen = false;
                 }}
                 >#{i} {section}
@@ -72,7 +72,7 @@
         <br />
         <button
             onclick={() => {
-                ref?.goto(nextIndex, { offset: { x: 0, y: 32 } });
+                ref?.goto(nextIndex, { offset: { x: 0, y: 56 } });
                 nextIndex = Math.floor(Math.random() * length);
                 isSidepanelOpen = false;
             }}
@@ -80,21 +80,21 @@
         </button>
         <button
             onclick={() => {
-                ref?.goto(length - 3, { offset: { x: 0, y: 32 } });
+                ref?.goto(length - 3, { offset: { x: 0, y: 56 } });
                 isSidepanelOpen = false;
             }}
             >3rd last Item
         </button>
         <button
             onclick={() => {
-                ref?.goto(length - 2, { offset: { x: 0, y: 32 } });
+                ref?.goto(length - 2, { offset: { x: 0, y: 56 } });
                 isSidepanelOpen = false;
             }}
             >2nd last Item
         </button>
         <button
             onclick={() => {
-                ref?.goto(length - 1, { offset: { x: 0, y: 32 } });
+                ref?.goto(length - 1, { offset: { x: 0, y: 56 } });
                 isSidepanelOpen = false;
             }}
             >Last Item
@@ -108,7 +108,8 @@
         box-shadow: 2px 0 4px rgba(0, 0, 0, 0.1);
         display: flex;
         flex-direction: column;
-        height: 100%;
+        max-height: 100%;
+        width: 240px;
         overflow: auto;
         padding: 0;
         position: absolute;
