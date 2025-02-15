@@ -30,12 +30,15 @@
     bind:maxThumbTravel
     height={trackHeight}
     width={trackWidth}
+    {goto}
     {size}
     {offset}
+    {currentY}
 >
     <MagicScrollbarThumb
         component={thumb}
         bind:currentIndex={index}
+        bind:thumbHeight
         {size}
         {minThumbTravel}
         {maxThumbTravel}
