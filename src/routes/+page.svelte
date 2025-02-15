@@ -18,15 +18,13 @@
 {/snippet}
 
 {#snippet track(children)}
-    <div style={`height: 100%; width: 15px; background: #ccc;`}>
+    <div class="track">
         {@render children()}
     </div>
 {/snippet}
 
 {#snippet thumb()}
-    <div
-        style={'height: 36px; width: 10px; background: #555; user-select: none; border-radius: 6px;'}
-    ></div>
+    <div class="thumb"></div>
 {/snippet}
 
 <svelte:window bind:innerHeight={height} />
@@ -152,5 +150,24 @@
         p {
             margin: 0;
         }
+    }
+
+    .track {
+        height: 100%;
+        width: 15px;
+        background: none;
+        user-select: none;
+
+        @media (min-width: 576px) {
+            background: #ccc;
+        }
+    }
+
+    .thumb {
+        height: 36px;
+        width: 10px;
+        background: #555;
+        user-select: none;
+        border-radius: 6px;
     }
 </style>

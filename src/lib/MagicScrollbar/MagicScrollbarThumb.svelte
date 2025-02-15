@@ -74,7 +74,6 @@
 
     const onTouchMove = (e) => {
         if (!isDragging) return;
-        e.preventDefault();
 
         const delta = e.touches[0].clientY - startY;
         thumbPosition = Math.max(

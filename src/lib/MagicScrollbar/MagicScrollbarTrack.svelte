@@ -92,9 +92,13 @@
     bind:offsetWidth={width}
     onresize={resize}
     onmousedown={handleTrackPress}
-    ontouchstart={handleTrackPress}
     onmouseup={handleRelease}
-    ontouchend={handleRelease}
+    role="scrollbar"
+    tabindex="0"
+    aria-controls="magic-scroll-track"
+    aria-valuemax={maxThumbTravel}
+    aria-valuemin={minThumbTravel}
+    aria-valuenow={thumbPosition}
     style={`position: fixed; right: 0; top: 0; height: 100%;`}
 >
     {@render component(children)}
