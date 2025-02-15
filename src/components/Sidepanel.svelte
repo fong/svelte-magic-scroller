@@ -1,20 +1,44 @@
 <script>
-    let { isSidepanelOpen = $bindable(false), index, length, offset, nextIndex, ref } = $props();
+    let {
+        isSidepanelOpen = $bindable(false),
+        length = $bindable(0),
+        index,
+        offset,
+        nextIndex,
+        ref
+    } = $props();
+    let sidepanelRef;
 
     const sections = ['Top', 'Install', 'How to Use', 'Features', 'Quirks'];
 
     $effect(() => {
         nextIndex = Math.floor(Math.random() * length);
     });
+
+    const handleClickOutside = (e) => {
+        if (
+            sidepanelRef &&
+            !sidepanelRef.contains(e.target) &&
+            !e.target.classList.contains('menu-button')
+        ) {
+            isSidepanelOpen = false;
+        }
+    };
+
+    const checkCurrentIndex = () => {
+        if (index >= length && length > 0) {
+            ref?.goto(length - 1, { offset: { x: 0, y: 32 } });
+        }
+    };
 </script>
 
+<svelte:document onmousedown={handleClickOutside} />
+
 <div
+    bind:this={sidepanelRef}
     class="sidepanel {isSidepanelOpen ? 'open' : ''}"
     style={`
-        position: absolute; 
-        z-index: 100; 
-        display: flex; 
-        flex-direction: column;
+
     `}
 >
     <div class="sidepanel-content">
@@ -24,7 +48,14 @@
             </p>
             <p>Offset: {offset.y.toFixed(2)}</p>
             <label for="list-size">Number of Items</label>
-            <input id="list-size" bind:value={length} type="number" />
+            <input
+                id="list-size"
+                min="0"
+                required
+                bind:value={length}
+                onkeyup={checkCurrentIndex}
+                type="number"
+            />
         </div>
         {#each sections as section, i}
             <button
@@ -75,9 +106,14 @@
     .sidepanel {
         background: white;
         box-shadow: 2px 0 4px rgba(0, 0, 0, 0.1);
-        transition: transform 0.3s ease;
+        display: flex;
+        flex-direction: column;
+        height: 100%;
         overflow: auto;
         padding: 0;
+        position: absolute;
+        transition: transform 0.3s ease;
+        z-index: 100;
         font-family:
             system-ui,
             -apple-system,
@@ -90,7 +126,6 @@
             'Open Sans',
             'Helvetica Neue',
             sans-serif;
-        height: 100%;
     }
 
     @media (max-width: 1280px) {
@@ -120,7 +155,6 @@
         gap: 4px;
 
         padding: 8px;
-        padding-top: 4rem;
 
         p {
             margin: 0;

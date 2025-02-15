@@ -24,7 +24,7 @@
 <svelte:window bind:innerHeight={height} bind:innerWidth />
 
 <!-- Menu Button - only show on mobile -->
-{#if innerWidth <= MOBILE_BREAKPOINT}
+{#if innerWidth <= MOBILE_BREAKPOINT && !isSidepanelOpen}
     <button class="menu-button" onclick={toggleSidepanel}>
         {isSidepanelOpen ? '✕' : '☰'}
     </button>
@@ -44,7 +44,7 @@
     <div class="thumb"></div>
 {/snippet}
 
-<Sidepanel bind:isSidepanelOpen {index} {length} {offset} {nextIndex} {ref} />
+<Sidepanel bind:isSidepanelOpen bind:length {index} {offset} {nextIndex} {ref} />
 <div class="demo-root">
     <MagicScroller
         bind:this={ref}

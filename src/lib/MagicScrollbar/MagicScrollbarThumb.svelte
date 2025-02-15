@@ -33,6 +33,13 @@
     };
 
     const updateCurrentIndex = () => {
+        // Guard against size zero or invalid
+        if (!size || size <= 1) {
+            scrollIndex = 0;
+            goto(0);
+            return;
+        }
+
         // Calculate percentage of thumb travel (0-1)
         const percentComplete =
             (thumbPosition - minThumbTravel) / (maxThumbTravel - height - minThumbTravel);
@@ -43,6 +50,11 @@
     };
 
     const updateScrollPosition = () => {
+        if (!size || size <= 1) {
+            thumbPosition = minThumbTravel;
+            scrollIndex = 0;
+            return;
+        }
         scrollIndex = currentIndex;
         const percentComplete = currentIndex / (size - 1);
         thumbPosition = Math.max(

@@ -42,6 +42,11 @@
     let targetPosition = $state(0);
 
     const handleTrackPress = (e) => {
+        if (!size) {
+            thumbPosition = minThumbTravel;
+            return;
+        }
+
         isPressed = true;
         const trackRect = e.currentTarget.getBoundingClientRect();
         const clickY = e.clientY - trackRect.top;
@@ -56,24 +61,23 @@
         );
 
         const totalDistance = targetPosition - thumbPosition;
-        const stepDistance = (Math.sign(totalDistance) * height) / 8;
+        const stepDistance = size > 1 ? (Math.sign(totalDistance) * height) / 8 : 0;
 
         clearInterval(interval);
         interval = setInterval(() => {
-            if (!isPressed) {
+            if (!isPressed || !size) {
                 clearInterval(interval);
                 return;
             }
             thumbPosition += stepDistance;
             if (Math.abs(targetPosition - thumbPosition) < Math.abs(stepDistance)) {
-                thumbPosition = targetPosition + thumbHeight / 2;
-                isDragging = true;
+                thumbPosition = targetPosition;
                 clearInterval(interval);
             }
-            const percentComplete = thumbPosition / (maxThumbTravel - minThumbTravel);
-            currentY = thumbPosition;
-            startY = thumbPosition;
-            goto(Math.round(percentComplete * (size - 1)));
+            if (size > 1) {
+                const percentComplete = thumbPosition / (maxThumbTravel - minThumbTravel);
+                goto(Math.round(percentComplete * (size - 1)));
+            }
         }, STEP_INTERVAL);
     };
 
