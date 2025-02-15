@@ -432,6 +432,8 @@
     bind:this={containerRef}
     class={scrollerClass}
     style={`width: ${width}; height: ${height}; overflow: hidden; position: relative; cur ${scrollerStyle}`}
+    role="button"
+    tabindex="0"
     onmousewheel={handleOnWheel}
     onmousedown={handleOnMouseDown}
     onmousemove={handleOnMouseMove}

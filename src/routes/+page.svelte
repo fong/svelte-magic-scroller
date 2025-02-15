@@ -1,62 +1,50 @@
 <script>
+    import MagicScrollbar from '$lib/MagicScrollbar/MagicScrollbar.svelte';
     import MagicScroller from '$lib/MagicScroller.svelte';
-    import Item from './Item.svelte';
+    import Item from '../components/Item.svelte';
+    import Sidepanel from '../components/Sidepanel.svelte';
 
-    const length = 5000000000000;
+    const INITIAL_LENGTH = 5000000000000;
+    let length = $state(INITIAL_LENGTH);
     let height = $state(56);
     let index = $state(0);
     let offset = $state({ x: 0, y: 0 });
     let ref = $state();
-    let nextIndex = $state(Math.floor(Math.random() * length));
+    let nextIndex = $state(0);
 
-    const sections = ['Top', 'Install', 'How to Use', 'Features', 'Quirks'];
+    let isSidepanelOpen = $state(false);
+    let innerWidth = $state(0);
+    const MOBILE_BREAKPOINT = 1280;
+
+    const toggleSidepanel = () => {
+        isSidepanelOpen = !isSidepanelOpen;
+    };
 </script>
+
+<svelte:window bind:innerHeight={height} bind:innerWidth />
+
+<!-- Menu Button - only show on mobile -->
+{#if innerWidth <= MOBILE_BREAKPOINT && !isSidepanelOpen}
+    <button class="menu-button" onclick={toggleSidepanel}>
+        {isSidepanelOpen ? '✕' : '☰'}
+    </button>
+{/if}
 
 {#snippet item(i)}
     <Item index={i} {length} parent={ref} />
 {/snippet}
 
-<svelte:window bind:innerHeight={height} />
+{#snippet track(children)}
+    <div class="track">
+        {@render children()}
+    </div>
+{/snippet}
 
-<div style={`position: absolute; z-index: 100; display: flex; flex-direction: column;`}>
-    {#each sections as section, i}
-        <button
-            onclick={() => {
-                ref?.goto(i, { offset: { x: 0, y: 32 } });
-            }}
-            >#{i} {section}
-        </button>
-        {#if i === 0}
-            <br />
-        {/if}
-    {/each}
-    <br />
-    <button
-        onclick={() => {
-            ref?.goto(nextIndex, { offset: { x: 0, y: 32 } });
-            nextIndex = Math.floor(Math.random() * length);
-        }}
-        >Go to Random
-    </button>
-    <button
-        onclick={() => {
-            ref?.goto(length - 3, { offset: { x: 0, y: 32 } });
-        }}
-        >3rd last Item
-    </button>
-    <button
-        onclick={() => {
-            ref?.goto(length - 2, { offset: { x: 0, y: 32 } });
-        }}
-        >2nd last Item
-    </button>
-    <button
-        onclick={() => {
-            ref?.goto(length - 1, { offset: { x: 0, y: 32 } });
-        }}
-        >Last Item
-    </button>
-</div>
+{#snippet thumb()}
+    <div class="thumb"></div>
+{/snippet}
+
+<Sidepanel bind:isSidepanelOpen bind:length {index} {offset} {nextIndex} {ref} />
 <div class="demo-root">
     <MagicScroller
         bind:this={ref}
@@ -68,31 +56,23 @@
         {item}
         itemStyle={`display: flex; justify-content: center;`}
     ></MagicScroller>
+    <MagicScrollbar {track} {thumb} bind:index goto={ref?.goto} size={length}></MagicScrollbar>
 </div>
 
 <style>
-    sub {
-        font-size: 0.75rem;
-        font-weight: 400;
-        color: gray;
-    }
-    button {
-        padding: 8px 16px;
-        margin: 8px;
-        border: 2px solid #222;
-        border-radius: 8px;
-        box-shadow: 4px 4px 0px #222;
-        background: white;
-        color: #222;
-        font-size: 1rem;
-
-        cursor: pointer;
-    }
-
-    button:hover {
-        background: #222;
-        color: white;
-        transition: all 0.2s ease-in-out;
+    * {
+        font-family:
+            system-ui,
+            -apple-system,
+            BlinkMacSystemFont,
+            'Segoe UI',
+            Roboto,
+            Oxygen,
+            Ubuntu,
+            Cantarell,
+            'Open Sans',
+            'Helvetica Neue',
+            sans-serif;
     }
 
     .demo-root {
@@ -106,17 +86,43 @@
         background: whitesmoke;
         top: 0;
         left: 0;
-        font-family:
-            system-ui,
-            -apple-system,
-            BlinkMacSystemFont,
-            'Segoe UI',
-            Roboto,
-            Oxygen,
-            Ubuntu,
-            Cantarell,
-            'Open Sans',
-            'Helvetica Neue',
-            sans-serif;
+    }
+
+    .track {
+        height: 100%;
+        width: 15px;
+        background: none;
+        user-select: none;
+
+        @media (min-width: 576px) {
+            background: #ccc;
+        }
+    }
+
+    .thumb {
+        height: 36px;
+        width: 10px;
+        background: #555;
+        user-select: none;
+        border-radius: 6px;
+    }
+
+    .menu-button {
+        position: fixed;
+        top: 1rem;
+        left: 1rem;
+        z-index: 101;
+        padding: 0.5rem;
+        font-size: 1.5rem;
+        background: white;
+        border: none;
+        border-radius: 100%;
+        height: 2.5rem;
+        width: 2.5rem;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        user-select: none;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
     }
 </style>

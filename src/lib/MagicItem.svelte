@@ -1,4 +1,6 @@
 <script>
+    let isInitialRender = $state(true);
+
     let {
         component,
         width = $bindable(undefined),
@@ -10,15 +12,22 @@
         index
     } = $props();
 
-    let transformStyle = $state(`transform: translate3d(999999px, 999999px, 0);`);
+    let transformStyle = $state(`transform: translate3d(99999999px, 99999999px, 0); `);
 
     $effect(() => {
         if (typeof transform?.x === 'number' && typeof transform?.y === 'number') {
             transformStyle = `
-                ${isTouchMove ? 'transition: none;' : 'transition: transform 0.2s ease-in-out;'}
+                ${isInitialRender || isTouchMove ? 'transition: none;' : 'transition: transform 0.2s ease-in-out;'}
                 transform: translate3d(${transform?.x}px, ${transform?.y}px, 0);
                 -webkit-transform: translate3d(${transform?.x}px, ${transform?.y}px, 0);
             `;
+        }
+
+        // Set initial render to false after first position set
+        if (isInitialRender) {
+            setTimeout(() => {
+                isInitialRender = false;
+            }, 0);
         }
     });
 </script>
