@@ -3,18 +3,18 @@
 
     let {
         component,
-        width = $bindable(0),
+        currentIndex = $bindable(0),
+        currentY = $bindable(0),
         height = $bindable(0),
+        isDragging = $bindable(false),
+        maxThumbTravel = $bindable(0),
+        minThumbTravel = $bindable(0),
+        startY = $bindable(0),
         thumbHeight = $bindable(0),
         thumbPosition = $bindable(0),
-        isDragging = $bindable(false),
-        minThumbTravel = $bindable(0),
-        maxThumbTravel = $bindable(0),
-        startY = $bindable(0),
-        currentY = $bindable(0),
-        currentIndex = $bindable(0),
-        size,
-        goto
+        width = $bindable(0),
+        goto,
+        size
     } = $props();
 
     let node = $state(null);

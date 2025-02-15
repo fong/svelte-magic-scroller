@@ -3,29 +3,31 @@
 
     let {
         component,
-        height = $bindable(0),
-        width = $bindable(0),
-        thumbHeight = $bindable(0),
-        trackHeight = $bindable(0),
-        minThumbTravel = $bindable(0),
-        maxThumbTravel = $bindable(0),
-        thumbPosition = $bindable(0),
         currentY = $bindable(0),
-        size,
+        height = $bindable(0),
+        isDragging = $bindable(false),
+        maxThumbTravel = $bindable(0),
+        minThumbTravel = $bindable(0),
+        startY = $bindable(0),
+        thumbHeight = $bindable(0),
+        thumbPosition = $bindable(0),
+        trackHeight = $bindable(0),
+        width = $bindable(0),
+        children,
         goto,
         offset,
-        children
+        size
     } = $props();
 
     const init = () => {
         trackHeight = height;
-        maxThumbTravel = trackHeight - thumbHeight - offset?.bottom || 0;
+        maxThumbTravel = trackHeight - offset?.bottom || 0;
         minThumbTravel = offset?.top || 0;
     };
 
     const resize = () => {
         trackHeight = height;
-        maxThumbTravel = trackHeight - thumbHeight - offset?.bottom || 0;
+        maxThumbTravel = trackHeight - offset?.bottom || 0;
         minThumbTravel = offset?.top || 0;
     };
 
@@ -44,13 +46,6 @@
         const trackRect = e.currentTarget.getBoundingClientRect();
         const clickY = e.clientY - trackRect.top;
 
-        console.log(
-            clickY,
-            thumbPosition,
-            thumbHeight,
-            clickY >= thumbPosition && clickY <= thumbPosition + thumbHeight
-        );
-
         if (clickY >= thumbPosition && clickY <= thumbPosition + thumbHeight) {
             return;
         }
@@ -61,9 +56,7 @@
         );
 
         const totalDistance = targetPosition - thumbPosition;
-        // const stepDistance = totalDistance / STEPS;
         const stepDistance = (Math.sign(totalDistance) * height) / 8;
-        console.log(stepDistance);
 
         clearInterval(interval);
         interval = setInterval(() => {
@@ -73,11 +66,13 @@
             }
             thumbPosition += stepDistance;
             if (Math.abs(targetPosition - thumbPosition) < Math.abs(stepDistance)) {
-                thumbPosition = targetPosition;
+                thumbPosition = targetPosition + thumbHeight / 2;
+                isDragging = true;
                 clearInterval(interval);
             }
             const percentComplete = thumbPosition / (maxThumbTravel - minThumbTravel);
             currentY = thumbPosition;
+            startY = thumbPosition;
             goto(Math.round(percentComplete * (size - 1)));
         }, STEP_INTERVAL);
     };
