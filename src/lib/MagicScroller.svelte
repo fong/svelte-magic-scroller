@@ -434,6 +434,32 @@
             scrollTransformations(0, true);
         }
     };
+
+    const handleKeyDown = (e) => {
+        if (!e.shiftKey && e.key === 'Tab') {
+            e.preventDefault();
+            if (index < length - 1) {
+                goto(index + 1, { offset: { x: 0, y: 0 } });
+            }
+        }
+
+        if (e.shiftKey && e.key === 'Tab') {
+            e.preventDefault();
+            if (index > 0) {
+                goto(index - 1, { offset: { x: 0, y: 0 } });
+            }
+        }
+
+        if (e.key === 'ArrowUp') {
+            isTouchMove = false;
+            scrollTransformations(120);
+        }
+
+        if (e.key === 'ArrowDown') {
+            isTouchMove = false;
+            scrollTransformations(-120);
+        }
+    };
 </script>
 
 <svelte:window onresize={handleResize} />
@@ -441,9 +467,10 @@
 <div
     bind:this={containerRef}
     class={scrollerClass}
-    style={`width: ${width}; height: ${height}; overflow: hidden; position: relative; cur ${scrollerStyle}`}
-    role="button"
-    tabindex="0"
+    style={`width: ${width}; height: ${height}; overflow: hidden; position: relative; ${scrollerStyle}`}
+    role="listbox"
+    tabindex="-1"
+    aria-label="Scrollable content"
     onmousewheel={handleOnWheel}
     onmousedown={handleOnMouseDown}
     onmousemove={handleOnMouseMove}
@@ -451,6 +478,7 @@
     ontouchmove={handleOnTouchMove}
     ontouchstart={handleOnTouchStart}
     ontouchend={handleOnTouchEnd}
+    onkeydown={handleKeyDown}
 >
     {#each itemTransformations as d, i (i)}
         {#key d?.index}
