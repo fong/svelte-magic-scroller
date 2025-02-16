@@ -54,7 +54,6 @@
     let lastX = $state(0);
     let lastY = $state(0);
     let scrollDelta = $state({ x: 0, y: 0 });
-    // let offset = $state({ x: 0, y: 0 });
     let touchHistory = $state([]);
     let velocityX = $state(0);
     let velocityY = $state(0);
@@ -379,6 +378,18 @@
             }
         }
 
+        calculateNewReferences(deltaY);
+
+        // Apply momentum if large scroll
+        if (Math.abs(deltaY) > SCROLL_CHUNK_SIZE && isTouch) {
+            requestAnimationFrame(() => {
+                isTouchMove = true;
+                scrollTransformations(deltaY * MOMENTUM_FACTOR);
+            });
+        }
+    };
+
+    const calculateNewReferences = (deltaY) => {
         // Calculate total scroll distance
         let remainingScroll = Math.abs(deltaY);
         let scrollDirection = Math.sign(deltaY);
@@ -414,14 +425,6 @@
             }
 
             remainingScroll -= SCROLL_CHUNK_SIZE;
-        }
-
-        // Apply momentum if large scroll
-        if (Math.abs(deltaY) > SCROLL_CHUNK_SIZE && isTouch) {
-            requestAnimationFrame(() => {
-                isTouchMove = true;
-                scrollTransformations(deltaY * MOMENTUM_FACTOR);
-            });
         }
     };
 

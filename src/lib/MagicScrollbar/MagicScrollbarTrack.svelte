@@ -3,12 +3,9 @@
 
     let {
         component,
-        currentY = $bindable(0),
         height = $bindable(0),
-        isDragging = $bindable(false),
         maxThumbTravel = $bindable(0),
         minThumbTravel = $bindable(0),
-        startY = $bindable(0),
         thumbHeight = $bindable(0),
         thumbPosition = $bindable(0),
         trackHeight = $bindable(0),
