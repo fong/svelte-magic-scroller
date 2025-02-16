@@ -325,9 +325,14 @@
         let scaledDeltaY = deltaY;
         // Calculate boundaries
         const isAtStart = index === 0 && offset.y >= 0;
-        const isAtEnd =
-            index === length - 1 &&
-            offset.y + itemDimensions[index % FULL_BUFFER].height <= containerBounds.height; //;
+        let isAtEnd = false;
+        const lastItemIndex = length - 1;
+        if (index + BUFFER_ZONE > lastItemIndex) {
+            const lastItemTransform = itemTransformations[lastItemIndex % FULL_BUFFER];
+            const lastItemDimensions = itemDimensions[lastItemIndex % FULL_BUFFER];
+            const lastItemBottom = lastItemTransform.y + lastItemDimensions.height;
+            isAtEnd = lastItemBottom <= containerBounds.height;
+        }
 
         if (isTouch) {
             // Scale delta for wheel events
@@ -362,10 +367,12 @@
             }
         } else {
             // Non-touch scrolling: hard limit
-            if ((isAtStart && deltaY > 0) || (isAtEnd && deltaY < 0)) {
-                offset.y = isAtStart
-                    ? 0
-                    : containerBounds.height - itemDimensions[index % FULL_BUFFER].height;
+            if (isAtStart && deltaY > 0) {
+                offset.y = 0;
+            } else if (isAtEnd && deltaY < 0) {
+                index = length - 1;
+                offset.y =
+                    containerBounds.height - itemDimensions[(length - 1) % FULL_BUFFER].height;
             } else {
                 offset.y += scaledDeltaY;
                 scrollDelta.y = offset.y;
