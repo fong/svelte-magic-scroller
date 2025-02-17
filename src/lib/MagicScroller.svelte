@@ -6,7 +6,7 @@
         width,
         height,
         index = $bindable(0),
-        offset = $bindable({ x: 0, y: 0 }),
+        offset = $bindable(0),
         length,
         item,
         // direction = 'y',
@@ -68,7 +68,7 @@
 
     let itemTransformations = $derived.by(() => {
         let currentIndex = index;
-        let anchorY = offset?.y || 0;
+        let anchorY = offset || 0;
 
         let tempTransformations = new Array(FULL_BUFFER);
 
@@ -131,15 +131,12 @@
 
         tick().then(() => {
             isTouchMove = false;
-            if (targetIndex === 0 && options?.offset.y > 0) {
+            if (targetIndex === 0 && options?.offset > 0) {
                 index = targetIndex;
-                offset = { x: 0, y: 0 };
+                offset = 0;
             } else if (targetIndex === length - 1) {
                 index = targetIndex;
-                offset = {
-                    x: 0,
-                    y: 0
-                };
+                offset = 0;
                 tick().then(() => {
                     // hack to force recalculation for itemTransformations, index and offsets
                     scrollTransformations(-1);
@@ -150,22 +147,16 @@
                 if (length - BUFFER_ZONE < targetIndex) {
                     // first load items around index to get item bounds
                     index = targetIndex;
-                    offset = {
-                        x: 0,
-                        y: 0
-                    };
+                    offset = 0;
                     tick().then(() => {
                         for (let i = length - 1; i >= targetIndex; i--) {
                             remainingHeight += itemDimensions[i % FULL_BUFFER].height;
                         }
                         // If remaining height is less than container, adjust offset
-                        const proposedOffset = options?.offset?.y || 0;
+                        const proposedOffset = options?.offset || 0;
                         if (remainingHeight + proposedOffset <= containerBounds.height) {
                             index = length - 1;
-                            offset = {
-                                x: 0,
-                                y: 0
-                            };
+                            offset = 0;
                             tick().then(() => {
                                 // hack to force recalculation for itemTransformations, index and offsets
                                 scrollTransformations(-1);
@@ -174,7 +165,7 @@
                     });
                 } else {
                     index = targetIndex;
-                    offset = options?.offset || { x: 0, y: 0 };
+                    offset = options?.offset || 0;
                 }
             }
         });
@@ -216,14 +207,13 @@
             const deltaX = e.clientX - middleMouseStartX;
             const deltaY = e.clientY - middleMouseStartY;
             animationFrame = requestAnimationFrame(() => {
-                if (index === 0 && offset.y <= 0 && deltaY > 0) {
+                if (index === 0 && offset <= 0 && deltaY > 0) {
                     return;
                 }
 
                 if (
                     index === length - 1 &&
-                    offset.y + itemDimensions[index % FULL_BUFFER].height >=
-                        containerBounds.height &&
+                    offset + itemDimensions[index % FULL_BUFFER].height >= containerBounds.height &&
                     deltaY < 0
                 ) {
                     return;
@@ -323,7 +313,7 @@
     const scrollTransformations = (deltaY, isTouch) => {
         let scaledDeltaY = deltaY;
         // Calculate boundaries
-        const isAtStart = index === 0 && offset.y >= 0;
+        const isAtStart = index === 0 && offset >= 0;
         let isAtEnd = false;
         const lastItemIndex = length - 1;
         if (index + BUFFER_ZONE > lastItemIndex) {
@@ -339,11 +329,11 @@
 
             // Apply bounce effect
             if (isAtStart || isAtEnd) {
-                offset.y += scaledDeltaY * BOUNCE_TENSION;
+                offset += scaledDeltaY * BOUNCE_TENSION;
                 isOutOfBounds = true;
             } else {
-                offset.y += scaledDeltaY;
-                scrollDelta.y = offset.y;
+                offset += scaledDeltaY;
+                scrollDelta.y = offset;
                 isOutOfBounds = false;
             }
 
@@ -353,13 +343,13 @@
                     const targetY = isAtStart
                         ? 0
                         : containerBounds.height - itemDimensions[index % FULL_BUFFER].height;
-                    const distance = targetY - offset.y;
+                    const distance = targetY - offset;
 
                     if (Math.abs(distance) < 0.5) {
-                        offset.y = targetY;
+                        offset = targetY;
                         isOutOfBounds = false;
                     } else {
-                        offset.y += distance * RETURN_SPEED;
+                        offset += distance * RETURN_SPEED;
                         requestAnimationFrame(applyMomentum);
                     }
                 });
@@ -367,14 +357,14 @@
         } else {
             // Non-touch scrolling: hard limit
             if (isAtStart && deltaY > 0) {
-                offset.y = 0;
+                index = 0;
+                offset = 0;
             } else if (isAtEnd && deltaY < 0) {
                 index = length - 1;
-                offset.y =
-                    containerBounds.height - itemDimensions[(length - 1) % FULL_BUFFER].height;
+                offset = containerBounds.height - itemDimensions[(length - 1) % FULL_BUFFER].height;
             } else {
-                offset.y += scaledDeltaY;
-                scrollDelta.y = offset.y;
+                offset += scaledDeltaY;
+                scrollDelta.y = offset;
             }
         }
 
@@ -405,21 +395,20 @@
             if (scrollDirection > 0) {
                 // Scrolling up
                 if (
-                    offset.y > targetHeight ||
-                    (offset.y + containerBounds.height > targetHeight &&
+                    offset > targetHeight ||
+                    (offset + containerBounds.height > targetHeight &&
                         targetHeight > containerBounds.height)
                 ) {
-                    offset.y -= targetHeight;
+                    offset -= targetHeight;
                     index--;
                 }
             } else {
                 // Scrolling down
                 if (
-                    offset.y < 0 ||
-                    (offset.y + containerBounds.height < 0 &&
-                        currentHeight < containerBounds.height)
+                    offset < 0 ||
+                    (offset + containerBounds.height < 0 && currentHeight < containerBounds.height)
                 ) {
-                    offset.y += currentHeight;
+                    offset += currentHeight;
                     index++;
                 }
             }

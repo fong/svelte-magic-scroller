@@ -27,7 +27,7 @@
 
     const checkCurrentIndex = () => {
         if (index >= length && length > 0) {
-            ref?.goto(length - 1, { offset: { x: 0, y: 56 } });
+            ref?.goto(length - 1, { offset: 56 });
         }
     };
 </script>
@@ -46,7 +46,7 @@
             <p>
                 Current: {index}
             </p>
-            <p>Offset: {offset.y.toFixed(2)}</p>
+            <p>Offset: {offset.toFixed(2)}</p>
             <label for="list-size">Number of Items</label>
             <input
                 id="list-size"
@@ -60,7 +60,7 @@
         {#each sections as section, i}
             <button
                 onclick={() => {
-                    ref?.goto(i, { offset: { x: 0, y: 56 } });
+                    ref?.goto(i, 56);
                     isSidepanelOpen = false;
                 }}
                 >#{i} {section}
@@ -72,7 +72,7 @@
         <br />
         <button
             onclick={() => {
-                ref?.goto(nextIndex, { offset: { x: 0, y: 56 } });
+                ref?.goto(nextIndex, { offset: 56 });
                 nextIndex = Math.floor(Math.random() * length);
                 isSidepanelOpen = false;
             }}
@@ -80,21 +80,21 @@
         </button>
         <button
             onclick={() => {
-                ref?.goto(length - 3, { offset: { x: 0, y: 56 } });
+                ref?.goto(length - 3, { offset: 56 });
                 isSidepanelOpen = false;
             }}
             >3rd last Item
         </button>
         <button
             onclick={() => {
-                ref?.goto(length - 2, { offset: { x: 0, y: 56 } });
+                ref?.goto(length - 2, { offset: 56 });
                 isSidepanelOpen = false;
             }}
             >2nd last Item
         </button>
         <button
             onclick={() => {
-                ref?.goto(length - 1, { offset: { x: 0, y: 56 } });
+                ref?.goto(length - 1, { offset: 56 });
                 isSidepanelOpen = false;
             }}
             >Last Item
