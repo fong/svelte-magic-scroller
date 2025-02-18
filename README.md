@@ -16,6 +16,8 @@ Works best for super large lists like an activity feed or photo gallery
 
 ## How to use
 
+[Demo](https://svelte-magic-scroller.pages.dev/)
+
 ### Minimal example
 
 ```svelte
