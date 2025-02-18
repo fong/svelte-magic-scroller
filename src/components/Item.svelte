@@ -3,7 +3,7 @@
     import Info from './cards/Info.svelte';
     import Image from './cards/Image.svelte';
 
-    let { index, length, loaded = $bindable(false) } = $props();
+    let { index, length } = $props();
 </script>
 
 <div

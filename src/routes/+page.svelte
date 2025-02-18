@@ -6,9 +6,8 @@
 
     const INITIAL_LENGTH = 5000000000000;
     let length = $state(INITIAL_LENGTH);
-    let height = $state(56);
     let index = $state(0);
-    let offset = $state({ x: 0, y: 0 });
+    let offset = $state(0);
     let ref = $state();
     let nextIndex = $state(0);
 
@@ -21,7 +20,7 @@
     };
 </script>
 
-<svelte:window bind:innerHeight={height} bind:innerWidth />
+<svelte:window bind:innerWidth />
 
 <!-- Menu Button - only show on mobile -->
 {#if innerWidth <= MOBILE_BREAKPOINT && !isSidepanelOpen}
@@ -31,7 +30,7 @@
 {/if}
 
 {#snippet item(i)}
-    <Item index={i} {length} parent={ref} />
+    <Item index={i} {length} />
 {/snippet}
 
 {#snippet track(children)}
@@ -48,14 +47,14 @@
 <div class="demo-root">
     <MagicScroller
         bind:this={ref}
-        width="100%"
-        height="100%"
         bind:index
         bind:offset
+        itemStyle={`display: flex; justify-content: center;`}
+        width="100%"
+        height="100%"
         {length}
         {item}
-        itemStyle={`display: flex; justify-content: center;`}
-    ></MagicScroller>
+    />
     <MagicScrollbar {track} {thumb} bind:index goto={ref?.goto} size={length}></MagicScrollbar>
 </div>
 

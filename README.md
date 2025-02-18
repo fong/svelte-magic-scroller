@@ -1,58 +1,67 @@
-# create-svelte
+# svelte-magic-scroller
 
-Everything you need to build a Svelte library, powered by [`create-svelte`](https://github.com/sveltejs/kit/tree/main/packages/create-svelte).
+It's not real - it's just magic
 
-Read more about creating a library [in the docs](https://svelte.dev/docs/kit/packaging).
+This package is a virtualized scroller which enables the scrolling of unlimited items of unknown dimensions. Only items in the vicinity of the current viewport are rendered.
 
-## Creating a project
+Works best for super large lists like an activity feed or photo gallery
 
-If you're seeing this, you've probably already done this step. Congrats!
+## Install
 
-```bash
-# create a new project in the current directory
-npx sv create
+`npm install svelte-magic-scroller`
 
-# create a new project in my-app
-npx sv create my-app
+`yarn i svelte-magic-scroller`
+
+`pnpm i svelte-magic-scroller`
+
+## How to use
+
+### Minimal example
+
+```svelte
+<script>
+    const INITIAL_LENGTH = 5000000000000;
+    let length = $state(INITIAL_LENGTH); // list size
+    let index = $state(0); // first full item visible in viewport
+    let offset = $state(0); // y offset from top
+    let ref = $state();
+</script>
+
+{#snippet item(i)}
+    <Item index={i} {length} />
+{/snippet}
+
+<MagicScroller
+    bind:this={ref}
+    bind:index
+    bind:offset
+    itemStyle={`display: flex; justify-content: center;`}
+    width="100%"
+    height="100%"
+    {length}
+    {item}
+/>
 ```
 
-## Developing
+## Scroll bar
 
-Once you've created a project and installed dependencies with `npm install` (or `pnpm install` or `yarn`), start a development server:
+It is recommended to implement your own scroll bar to match your UX requirements. This is due to handling experience as the list size increase - the implementation of a scrollbar with 10,000 will likely need to differ significantly to another list with 1,000,000+ items.
 
-```bash
-npm run dev
+A basic scrollbar example can be found in the repo [here](https://github.com/fong/svelte-magic-scroller/tree/main/src/lib/MagicScrollbar)
 
-# or start the server and open the app in a new browser tab
-npm run dev -- --open
-```
+## Features
 
-Everything inside `src/lib` is part of your library, everything inside `src/routes` can be used as a showcase or preview app.
+- No restrictions to dimensions of virtualized lists (exceeds the 33554428px on Chrome/Safari, 33554400px on Firefox browser dimension limit)
+- Lazy loading
+- Low memory footprint
+- Configurable scroll speed
+- Fixed/Dynamic item sizes
+- Middle mouse button drag scroll support
+- Made for Svelte 5
+- No dependencies
 
-## Building
+## Quirks
 
-To build your library:
-
-```bash
-npm run package
-```
-
-To create a production version of your showcase app:
-
-```bash
-npm run build
-```
-
-You can preview the production build with `npm run preview`.
-
-> To deploy your app, you may need to install an [adapter](https://svelte.dev/docs/kit/adapters) for your target environment.
-
-## Publishing
-
-Go into the `package.json` and give your package the desired name through the `"name"` option. Also consider adding a `"license"` field and point it to a `LICENSE` file which you can create from a template (one popular option is the [MIT license](https://opensource.org/license/mit/)).
-
-To publish your library to [npm](https://www.npmjs.com):
-
-```bash
-npm publish
-```
+- while `index` and `offset` are bindable and can be set to move to any location on the list, it is recommended to use `goto()` to set the correct positions at the start/end of the list
+- `goto` function does not support smooth scrolling for large jumps, unless item is already in the buffer
+- No support for iOS Safari status bar go to top tap action
