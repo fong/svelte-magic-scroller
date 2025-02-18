@@ -2,7 +2,7 @@
 	"name": "svelte-magic-scroller",
 	"version": "0.1.3",
 	"license": "MIT",
-	"repository": "https://github.com/fong/svelte-magic-scroller",
+	"repository": "git+https://github.com/fong/svelte-magic-scroller.git",
 	"scripts": {
 		"dev": "vite dev",
 		"build": "vite build && npm run package",
