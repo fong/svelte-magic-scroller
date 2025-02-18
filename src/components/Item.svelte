@@ -12,7 +12,7 @@
 >
     {#if index === 0}
         <Title {length} />
-    {:else if index > 0 && index < 5}
+    {:else if index > 0 && index < 6}
         <Info {index} />
     {:else}
         <Image {index} />

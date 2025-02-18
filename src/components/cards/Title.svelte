@@ -16,6 +16,7 @@
         This package is a virtualized scroller which enables the scrolling of unlimited items of
         unknown dimensions. Only items in the vicinity of the current viewport are rendered.
     </p>
+    <p>Works best for super large lists like an activity feed or photo gallery.</p>
     <p>
         This page is a list of {@html writeScientificNum(length, 3)} items, including this intro section
         and all the documentation sections.

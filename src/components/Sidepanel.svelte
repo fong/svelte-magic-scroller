@@ -9,7 +9,7 @@
     } = $props();
     let sidepanelRef;
 
-    const sections = ['Top', 'Install', 'How to Use', 'Features', 'Quirks'];
+    const sections = ['Top', 'Features', 'Install', 'How to Use', 'Scroll bar', 'Quirks'];
 
     $effect(() => {
         nextIndex = Math.floor(Math.random() * length);

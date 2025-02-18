@@ -8,6 +8,17 @@ Works best for super large lists like an activity feed or photo gallery
 
 [Demo](https://svelte-magic-scroller.pages.dev/)
 
+## Features
+
+- No restrictions to dimensions of virtualized lists (exceeds the 33554428px on Chrome/Safari, 33554400px on Firefox browser dimension limit)
+- Lazy loading
+- Low memory footprint
+- Configurable scroll speed
+- Fixed/Dynamic item sizes
+- Middle mouse button drag scroll support
+- Made for Svelte 5
+- No dependencies
+
 ## Install
 
 `npm install svelte-magic-scroller`
@@ -56,17 +67,6 @@ The `goto` function does not support smooth scrolling when performing large list
 It is recommended to implement your own scroll bar to match your UX requirements. This is due to handling experience as the list size increase - the implementation of a scrollbar with 10,000 will likely need to differ significantly to another list with 1,000,000+ items.
 
 A basic scrollbar example can be found in the repo [here](https://github.com/fong/svelte-magic-scroller/tree/main/src/lib/MagicScrollbar)
-
-## Features
-
-- No restrictions to dimensions of virtualized lists (exceeds the 33554428px on Chrome/Safari, 33554400px on Firefox browser dimension limit)
-- Lazy loading
-- Low memory footprint
-- Configurable scroll speed
-- Fixed/Dynamic item sizes
-- Middle mouse button drag scroll support
-- Made for Svelte 5
-- No dependencies
 
 ## Quirks
 

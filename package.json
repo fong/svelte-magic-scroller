@@ -3,6 +3,7 @@
 	"version": "0.1.3",
 	"license": "MIT",
 	"repository": "git+https://github.com/fong/svelte-magic-scroller.git",
+	"homepage": "https://svelte-magic-scroller.pages.dev/",
 	"scripts": {
 		"dev": "vite dev",
 		"build": "vite build && npm run package",
@@ -22,7 +23,8 @@
 	"files": [
 		"dist",
 		"!dist/**/*.test.*",
-		"!dist/**/*.spec.*"
+		"!dist/**/*.spec.*",
+		"!dist/**/*.md"
 	],
 	"sideEffects": [
 		"**/*.css"
