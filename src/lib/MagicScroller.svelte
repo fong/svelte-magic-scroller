@@ -1,19 +1,46 @@
 <script>
     import MagicItem from './MagicItem.svelte';
-    import { tick } from 'svelte';
+    import { untrack, tick, onMount } from 'svelte';
 
+    /**
+     * @typedef {Object} ScrollerConfig
+     * @property {number} buffer - Number of items to buffer above and below visible area
+     * @property {number} momentum - Momentum factor for scroll deceleration
+     * @property {Object} friction - Friction coefficients for different scroll speeds
+     * @property {number} friction.fast - Friction for fast swipes (0.99)
+     * @property {number} friction.medium - Friction for medium swipes (0.98)
+     * @property {number} friction.slow - Friction for slow swipes (0.95)
+     * @property {Object} velocity - Velocity thresholds
+     * @property {number} velocity.fast - Threshold for fast swipes (30)
+     * @property {number} velocity.medium - Threshold for medium swipes (15)
+     * @property {Object} bounce - Bounce effect configuration
+     * @property {number} bounce.tension - Bounce resistance (0.3)
+     * @property {number} bounce.returnSpeed - Speed of return animation (0.15)
+     */
+
+    /** @type {import('svelte').Props} */
     let {
+        /** @type {string} CSS Width of the scroller container */
         width,
+        /** @type {string} CSS Height of the scroller container */
         height,
-        index = $bindable(0),
+        /** @type {number} Current item index */
+        index = $bindable(null),
+        /** @type {number} Scroll offset */
         offset = $bindable(0),
+        /** @type {number} Total number of items */
         length,
+        /** @type {import('svelte').SvelteComponent} Item component to render */
         item,
-        // direction = 'y',
+        /** @type {string} CSS class for scroller container */
         scrollerClass = '',
+        /** @type {string} Inline styles for scroller container */
         scrollerStyle = '',
+        /** @type {string} CSS class for item containers */
         itemClass = '',
+        /** @type {string} Inline styles for item containers */
         itemStyle = '',
+        /** @type {ScrollerConfig} Scroller configuration */
         config = {
             buffer: 15,
             momentum: 0.8,
@@ -125,6 +152,19 @@
         }
     };
 
+    /**
+     * Scrolls to a specific item in the list
+     * @param {number} targetIndex - Index of the item to scroll to (0 to length-1)
+     * @param {Object} [options] - Scroll options
+     * @param {number} [options.offset=0] - Offset from the top of the item
+     * @returns {void} If targetIndex is out of bounds
+     * @example
+     * // Scroll to item at index 5
+     * goto(5);
+     *
+     * // Scroll to item at index 10 with offset 56px
+     * goto(10, { offset: 56 });
+     */
     export const goto = (targetIndex, options = { offset: 0 }) => {
         if (!containerBounds || targetIndex < 0 || targetIndex >= length) return;
         cancelMomentumScrolling();
@@ -449,6 +489,13 @@
             scrollTransformations(-120);
         }
     };
+
+    onMount(() => {
+        goto(
+            untrack(() => index) || 0,
+            untrack(() => offset)
+        );
+    });
 </script>
 
 <svelte:window onresize={handleResize} />
