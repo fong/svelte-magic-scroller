@@ -1,6 +1,7 @@
 <script>
     import MagicItem from './MagicItem.svelte';
     import { untrack, tick, onMount } from 'svelte';
+    import baseScrollerConfig from './baseScrollerConfig.js';
 
     /**
      * @typedef {Object} ScrollerConfig
@@ -41,23 +42,7 @@
         /** @type {string} Inline styles for item containers */
         itemStyle = '',
         /** @type {ScrollerConfig} Scroller configuration */
-        config = {
-            buffer: 15,
-            momentum: 0.8,
-            friction: {
-                fast: 0.99,
-                medium: 0.98,
-                slow: 0.95
-            },
-            velocity: {
-                fast: 30,
-                medium: 15
-            },
-            bounce: {
-                tension: 0.3,
-                returnSpeed: 0.15
-            }
-        }
+        config = baseScrollerConfig
     } = $props();
 
     const BUFFER_ZONE = config.buffer; // Content to buffer above and below current index

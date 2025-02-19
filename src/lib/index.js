@@ -6,11 +6,13 @@ import {
     MagicScrollbarThumb,
     MagicScrollbarTrack
 } from './MagicScrollbar/index.js';
+import baseScrollerConfig from "./baseScrollerConfig.js";
 
 export {
     MagicScroller,
     MagicItem,
     MagicScrollbar,
     MagicScrollbarThumb,
-    MagicScrollbarTrack
+    MagicScrollbarTrack,
+    baseScrollerConfig
 };
