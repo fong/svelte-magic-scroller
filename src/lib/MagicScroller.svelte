@@ -125,7 +125,7 @@
         }
     };
 
-    export const goto = (targetIndex, options) => {
+    export const goto = (targetIndex, options = { offset: 0 }) => {
         if (!containerBounds || targetIndex < 0 || targetIndex >= length) return;
         cancelMomentumScrolling();
 
