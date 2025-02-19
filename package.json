@@ -1,6 +1,6 @@
 {
 	"name": "svelte-magic-scroller",
-	"version": "0.1.6",
+	"version": "0.1.7",
 	"license": "MIT",
 	"repository": "git+https://github.com/fong/svelte-magic-scroller.git",
 	"homepage": "https://svelte-magic-scroller.pages.dev/",

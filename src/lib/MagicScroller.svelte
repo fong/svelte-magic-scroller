@@ -369,6 +369,7 @@
 
             // Apply bounce effect
             if (isAtStart || isAtEnd) {
+                index = isAtStart ? 0 : length - 1;
                 offset += scaledDeltaY * BOUNCE_TENSION;
                 isOutOfBounds = true;
             } else {
