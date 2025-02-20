@@ -1,4 +1,4 @@
-export default baseScrollerConfig = {
+const baseScrollerConfig = {
     buffer: 15,
     momentum: 0.8,
     friction: {
@@ -15,3 +15,5 @@ export default baseScrollerConfig = {
         returnSpeed: 0.15
     }
 }
+
+export default baseScrollerConfig;
