@@ -494,12 +494,12 @@
             untrack(() => index) || 0,
             untrack(() => offset)
         );
-    });
 
-    onDestroy(() => {
-        isMounted = false;
-        cancelMomentumScrolling();
-        cancelAnimationFrame(animationFrame);
+        return () => {
+            isMounted = false;
+            cancelMomentumScrolling();
+            cancelAnimationFrame(animationFrame);
+        };
     });
 </script>
 
