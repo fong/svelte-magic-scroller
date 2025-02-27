@@ -8,6 +8,8 @@ Works best for super large lists like an activity feed or photo gallery
 
 [Demo](https://svelte-magic-scroller.pages.dev/)
 
+[npm](https://www.npmjs.com/package/svelte-magic-scroller)
+
 ## Features
 
 - No restrictions to dimensions of virtualized lists (exceeds the 33554428px on Chrome/Safari, 33554400px on Firefox browser dimension limit)
