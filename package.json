@@ -4,6 +4,7 @@
 	"license": "MIT",
 	"repository": "git+https://github.com/fong/svelte-magic-scroller.git",
 	"homepage": "https://svelte-magic-scroller.pages.dev/",
+	"keywords": ["svelte", "infinite", "virtual", "scroll"],
 	"scripts": {
 		"dev": "vite dev",
 		"build": "vite build && npm run package",

@@ -1,14 +1,16 @@
-# svelte-magic-scroller
+# Svelte Magic Scroller
+
+[![NPM Version](https://img.shields.io/npm/v/svelte-magic-scroller?style=flat)](https://www.npmjs.com/package/svelte-magic-scroller)
+[![NPM Downloads](https://img.shields.io/npm/dm/svelte-magic-scroller)](https://www.npmjs.com/package/svelte-magic-scroller)
+[![NPM Unpacked Size](https://img.shields.io/npm/unpacked-size/svelte-magic-scroller)](https://www.npmjs.com/package/svelte-magic-scroller)
 
 It's not real - it's just magic
 
-This package is a virtualized scroller which enables the scrolling of unlimited items of unknown dimensions. Only items in the vicinity of the current viewport are rendered.
+This package is a virtualized infinite scroller which enables the scrolling of unlimited items of unknown dimensions. Only items in the vicinity of the current viewport are rendered.
 
 Works best for super large lists like an activity feed or photo gallery
 
 [Demo](https://svelte-magic-scroller.pages.dev/)
-
-[npm](https://www.npmjs.com/package/svelte-magic-scroller)
 
 ## Features
 
@@ -56,6 +58,56 @@ Works best for super large lists like an activity feed or photo gallery
     {length}
     {item}
 />
+```
+
+### Configuration
+
+- {number} buffer - Number of items to buffer above and below visible area
+- {number} momentum - Momentum factor for scroll deceleration
+
+Friction coefficients for different scroll speeds
+
+- {number} friction.fast - Friction for fast swipes (0.99)
+- {number} friction.medium - Friction for medium swipes (0.98)
+- {number} friction.slow - Friction for slow swipes (0.95)
+
+Velocity thresholds
+
+- {number} velocity.fast - Threshold for fast swipes (30)
+- {number} velocity.medium - Threshold for medium swipes (15)
+
+Bounce effect configuration
+
+- {number} bounce.tension - Bounce resistance (0.3)
+- {number} bounce.returnSpeed - Speed of return animation (0.15)
+
+```javascript
+    config = {
+        buffer: 15,
+        momentum: 0.8,
+        friction: {
+            fast: 0.99,
+            medium: 0.98,
+            slow: 0.95
+        },
+        velocity: {
+            fast: 30,
+            medium: 15
+        },
+        bounce: {
+            tension: 0.3,
+            returnSpeed: 0.15
+        }
+    }
+```
+
+You can pull from the base configuration if you only want to change a few values to keep the rest on the defaults.
+
+```javascript
+    config = {
+        ...baseScrollerConfig,
+        buffer: 50
+    }
 ```
 
 ### Go to
