@@ -1,6 +1,6 @@
 <script>
     import MagicItem from './MagicItem.svelte';
-    import { untrack, tick, onMount } from 'svelte';
+    import { untrack, tick, onMount, onDestroy } from 'svelte';
     import baseScrollerConfig from './baseScrollerConfig.js';
 
     /**
