@@ -74,6 +74,7 @@
     let isMiddleMouseDown = $state(false);
     let middleMouseStartX = $state(0);
     let middleMouseStartY = $state(0);
+    let isMounted = $state(false);
 
     let isOutOfBounds = $state(false);
     let isMomentumScrolling = $state(false);
@@ -128,6 +129,17 @@
         return tempTransformations;
     });
 
+    /**
+     * Returns the current scroll position
+     * @returns {{ index: number, offset: number }}
+     */
+    export const getCurrentPosition = () => {
+        return {
+            index,
+            offset
+        };
+    };
+
     const cancelMomentumScrolling = () => {
         if (isMomentumScrolling) {
             cancelAnimationFrame(animationFrame);
@@ -151,7 +163,7 @@
      * goto(10, { offset: 56 });
      */
     export const goto = (targetIndex, options = { offset: 0 }) => {
-        if (!containerBounds || targetIndex < 0 || targetIndex >= length) return;
+        if (!isMounted || !containerBounds || targetIndex < 0 || targetIndex >= length) return;
         cancelMomentumScrolling();
 
         tick().then(() => {
@@ -477,10 +489,17 @@
     };
 
     onMount(() => {
+        isMounted = true;
         goto(
             untrack(() => index) || 0,
             untrack(() => offset)
         );
+    });
+
+    onDestroy(() => {
+        isMounted = false;
+        cancelMomentumScrolling();
+        cancelAnimationFrame(animationFrame);
     });
 </script>
 
