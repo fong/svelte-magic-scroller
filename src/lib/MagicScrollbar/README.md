@@ -12,47 +12,46 @@ It is possible to include offset adjustments while scrubbing to improve the smoo
 
 ```svelte
 <script>
-    const INITIAL_LENGTH = 5000000000000;
-    let length = $state(INITIAL_LENGTH); // list size
-    let index = $state(0); // first full item visible in viewport
-    let offset = $state(0); // y offset from top
-    let ref = $state();
+  const INITIAL_LENGTH = 5000000000000;
+  let length = $state(INITIAL_LENGTH); // list size
+  let index = $state(0); // first full item visible in viewport
+  let offset = $state(0); // y offset from top
+  let ref = $state();
 </script>
 
 {#snippet item(i)}
-    <Item index={i} {length} />
+  <Item index={i} {length} />
 {/snippet}
 
 {#snippet track(children)}
-    <div class="track">
-        {@render children()}
-    </div>
+  <div class="track">
+    {@render children()}
+  </div>
 {/snippet}
 
 {#snippet thumb()}
-    <div class="thumb"></div>
+  <div class="thumb"></div>
 {/snippet}
 
 <MagicScroller
-    bind:this={ref}
-    bind:index
-    bind:offset
-    itemStyle={`display: flex; justify-content: center;`}
-    width="100%"
-    height="100%"
-    {length}
-    {item}
+  bind:this={ref}
+  bind:index
+  bind:offset
+  itemStyle={`display: flex; justify-content: center;`}
+  width="100%"
+  height="100%"
+  {length}
+  {item}
 />
-<MagicScrollbar {track} {thumb} bind:index goto={ref?.goto} size={length}`/>
+<MagicScrollbar {track} {thumb} bind:index goto={ref?.goto} size={length} ` />
 
 <style>
-    .track {
-        /* your scroll track style here */
-    }
+  .track {
+    /* your scroll track style here */
+  }
 
-    .thumb {
-        /* your scroll thumb style here */
-    }
+  .thumb {
+    /* your scroll thumb style here */
+  }
 </style>
-
 ```

@@ -37,26 +37,26 @@ Works best for super large lists like an activity feed or photo gallery
 
 ```svelte
 <script>
-    const INITIAL_LENGTH = 5000000000000;
-    let length = $state(INITIAL_LENGTH); // list size
-    let index = $state(0); // first full item visible in viewport
-    let offset = $state(0); // y offset from top
-    let ref = $state();
+  const INITIAL_LENGTH = 5000000000000;
+  let length = $state(INITIAL_LENGTH); // list size
+  let index = $state(0); // first full item visible in viewport
+  let offset = $state(0); // y offset from top
+  let ref = $state();
 </script>
 
 {#snippet item(i)}
-    <Item index={i} {length} />
+  <Item index={i} {length} />
 {/snippet}
 
 <MagicScroller
-    bind:this={ref}
-    bind:index
-    bind:offset
-    itemStyle={`display: flex; justify-content: center;`}
-    width="100%"
-    height="100%"
-    {length}
-    {item}
+  bind:this={ref}
+  bind:index
+  bind:offset
+  itemStyle={`display: flex; justify-content: center;`}
+  width="100%"
+  height="100%"
+  {length}
+  {item}
 />
 ```
 
@@ -82,32 +82,32 @@ Bounce effect configuration
 - {number} bounce.returnSpeed - Speed of return animation (0.15)
 
 ```javascript
-    config = {
-        buffer: 15,
-        momentum: 0.8,
-        friction: {
-            fast: 0.99,
-            medium: 0.98,
-            slow: 0.95
-        },
-        velocity: {
-            fast: 30,
-            medium: 15
-        },
-        bounce: {
-            tension: 0.3,
-            returnSpeed: 0.15
-        }
-    }
+config = {
+  buffer: 15,
+  momentum: 0.8,
+  friction: {
+    fast: 0.99,
+    medium: 0.98,
+    slow: 0.95
+  },
+  velocity: {
+    fast: 30,
+    medium: 15
+  },
+  bounce: {
+    tension: 0.3,
+    returnSpeed: 0.15
+  }
+};
 ```
 
 You can pull from the base configuration if you only want to change a few values to keep the rest on the defaults.
 
 ```javascript
-    config = {
-        ...baseScrollerConfig,
-        buffer: 50
-    }
+config = {
+  ...baseScrollerConfig,
+  buffer: 50
+};
 ```
 
 ### Go to
