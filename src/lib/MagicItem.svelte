@@ -22,26 +22,20 @@
         /** @type {string} Additional inline styles */
         style = '',
         /** @type {number} Index of this item in the list */
-        index
+        index,
+        /** @type {isMounted} true if parent component has been mounted */
+        isMounted
     } = $props();
 
-    let transformStyle = $state(`transform: translate3d(99999999px, 99999999px, 0); `);
-    let isInitialRender = $state(true);
+    let transformStyle = $state(`transform: translate3d(0, 99999999px, 0);`);
 
     $effect(() => {
         if (typeof transform?.x === 'number' && typeof transform?.y === 'number') {
             transformStyle = `
-                ${isInitialRender || isTouchMove ? 'transition: none;' : 'transition: transform 0.2s ease-in-out;'}
+                ${isMounted || isTouchMove ? 'transition: none;' : 'transition: transform 0.2s ease-in-out;'}
                 transform: translate3d(${transform?.x}px, ${transform?.y}px, 0);
                 -webkit-transform: translate3d(${transform?.x}px, ${transform?.y}px, 0);
             `;
-        }
-
-        // Set initial render to false after first position set
-        if (isInitialRender) {
-            setTimeout(() => {
-                isInitialRender = false;
-            }, 0);
         }
     });
 </script>

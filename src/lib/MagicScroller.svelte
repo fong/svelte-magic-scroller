@@ -531,6 +531,7 @@
                     component={item}
                     index={d.index}
                     {isTouchMove}
+                    {isMounted}
                     class={itemClass}
                     style={itemStyle}
                 />
