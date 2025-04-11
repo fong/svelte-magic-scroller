@@ -75,6 +75,7 @@
   let middleMouseStartX = $state(0);
   let middleMouseStartY = $state(0);
   let isMounted = $state(false);
+  let isTouching = $state(false);
 
   let isOutOfBounds = $state(false);
   let isMomentumScrolling = $state(false);
@@ -298,9 +299,11 @@
     lastX = touch.clientX;
     lastY = touch.clientY;
     touchHistory = [];
+    isTouching = true;
   };
 
   const handleOnTouchEnd = () => {
+    isTouching = false;
     if (touchHistory.length < 2) return;
 
     // Calculate final velocity
@@ -333,12 +336,13 @@
     const velocityMagnitude = Math.sqrt(velocityX * velocityX + velocityY * velocityY);
 
     // Select friction based on velocity
-    const currentFriction =
-      velocityMagnitude > VELOCITY_FAST
-        ? FRICTION_FAST
-        : velocityMagnitude > VELOCITY_MEDIUM
-          ? FRICTION_MEDIUM
-          : FRICTION_SLOW;
+    let currentFriction = FRICTION_SLOW;
+
+    if (velocityMagnitude > VELOCITY_FAST) {
+      currentFriction = FRICTION_FAST;
+    } else if (velocityMagnitude > VELOCITY_MEDIUM) {
+      currentFriction = FRICTION_MEDIUM;
+    }
 
     scrollTransformations(velocityY, true);
     velocityX *= currentFriction;
@@ -350,7 +354,13 @@
   const scrollTransformations = (deltaY, isTouch) => {
     let scaledDeltaY = deltaY;
     // Calculate boundaries
-    const isAtStart = index === 0 && offset >= 0;
+    let heightAbove = 0;
+    if (index <= FULL_BUFFER) {
+      for (let i = index - 1; i >= 0; i--) {
+        heightAbove += itemDimensions[i % FULL_BUFFER].height;
+      }
+    }
+    const isAtStart = (index === 0 && offset >= 0) || (index > 0 && offset > -heightAbove);
     let isAtEnd = false;
     const lastItemIndex = length - 1;
     if (index + BUFFER_ZONE > lastItemIndex) {
@@ -375,25 +385,22 @@
         isOutOfBounds = false;
       }
 
-      // Return to bounds if out of bounds
-      if (isOutOfBounds) {
+      // Return to bounds if out of bounds and not touching
+      if (isOutOfBounds && !isTouching) {
         requestAnimationFrame(() => {
           const targetY = isAtStart
             ? 0
             : containerBounds.height - itemDimensions[index % FULL_BUFFER].height;
           const distance = targetY - offset;
 
-          if (Math.abs(distance) < 0.5) {
-            offset = targetY;
-            isOutOfBounds = false;
-          } else {
-            offset += distance * RETURN_SPEED;
-            requestAnimationFrame(applyMomentum);
-          }
+          offset += distance * RETURN_SPEED;
+          requestAnimationFrame(applyMomentum);
         });
       }
     } else {
       // Non-touch scrolling: hard limit
+      calculateNewReferences(deltaY);
+
       if (isAtStart && deltaY > 0) {
         index = 0;
         offset = 0;
@@ -412,7 +419,7 @@
     if (Math.abs(deltaY) > SCROLL_CHUNK_SIZE && isTouch) {
       requestAnimationFrame(() => {
         isTouchMove = true;
-        scrollTransformations(deltaY * MOMENTUM_FACTOR);
+        scrollTransformations(deltaY * MOMENTUM_FACTOR, true);
       });
     }
   };

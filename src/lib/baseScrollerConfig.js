@@ -12,7 +12,7 @@ const baseScrollerConfig = {
   },
   bounce: {
     tension: 0.3,
-    returnSpeed: 0.15
+    returnSpeed: 0.3
   }
 };
 

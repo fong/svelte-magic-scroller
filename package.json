@@ -10,15 +10,6 @@
     "virtual",
     "scroll"
   ],
-  "title": "Svelte Magic Scroller",
-  "url": "https://svelte-magic-scroller.pages.dev",
-  "description": "This package is a virtualized scroller which enables the scrolling of unlimited items of unknown dimensions. Only items in the vicinity of the current viewport are rendered.  Works best for super large lists like an activity feed or photo gallery.",
-  "npm": "svelte-magic-scroller",
-  "categories": [
-    "ui-components",
-    "user-interaction",
-    "styling-and-layout"
-  ],
   "scripts": {
     "dev": "vite dev",
     "build": "vite build && npm run package",
