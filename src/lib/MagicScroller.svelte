@@ -354,13 +354,7 @@
   const scrollTransformations = (deltaY, isTouch) => {
     let scaledDeltaY = deltaY;
     // Calculate boundaries
-    let heightAbove = 0;
-    if (index <= FULL_BUFFER) {
-      for (let i = index - 1; i >= 0; i--) {
-        heightAbove += itemDimensions[i % FULL_BUFFER].height;
-      }
-    }
-    const isAtStart = (index === 0 && offset >= 0) || (index > 0 && offset > -heightAbove);
+    const isAtStart = index === 0 && offset >= 0;
     let isAtEnd = false;
     const lastItemIndex = length - 1;
     if (index + BUFFER_ZONE > lastItemIndex) {
@@ -393,14 +387,17 @@
             : containerBounds.height - itemDimensions[index % FULL_BUFFER].height;
           const distance = targetY - offset;
 
-          offset += distance * RETURN_SPEED;
-          requestAnimationFrame(applyMomentum);
+          if (Math.abs(distance) < 0.5) {
+            offset = targetY;
+            isOutOfBounds = false;
+          } else {
+            offset += distance * RETURN_SPEED;
+            requestAnimationFrame(applyMomentum);
+          }
         });
       }
     } else {
       // Non-touch scrolling: hard limit
-      calculateNewReferences(deltaY);
-
       if (isAtStart && deltaY > 0) {
         index = 0;
         offset = 0;
@@ -419,7 +416,7 @@
     if (Math.abs(deltaY) > SCROLL_CHUNK_SIZE && isTouch) {
       requestAnimationFrame(() => {
         isTouchMove = true;
-        scrollTransformations(deltaY * MOMENTUM_FACTOR, true);
+        scrollTransformations(deltaY * MOMENTUM_FACTOR);
       });
     }
   };
