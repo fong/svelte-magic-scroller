@@ -77,8 +77,13 @@
   let isMounted = $state(false);
   let isTouching = $state(false);
 
-  let isOutOfBounds = $state(false);
   let isMomentumScrolling = $state(false);
+
+  let transformStyle = $state('');
+  let containerY = $state(0);
+  let isTransformedContainer = $state(false);
+
+  let isInViews = $state(Array(FULL_BUFFER).fill({ index: -1, inView: false }));
 
   let itemTransformations = $derived.by(() => {
     let currentIndex = index;
@@ -354,70 +359,137 @@
   const scrollTransformations = (deltaY, isTouch) => {
     let scaledDeltaY = deltaY;
     // Calculate boundaries
-    const isAtStart = index === 0 && offset >= 0;
-    let isAtEnd = false;
-    const lastItemIndex = length - 1;
-    if (index + BUFFER_ZONE > lastItemIndex) {
-      const lastItemTransform = itemTransformations[lastItemIndex % FULL_BUFFER];
-      const lastItemDimensions = itemDimensions[lastItemIndex % FULL_BUFFER];
-      const lastItemBottom = lastItemTransform.y + lastItemDimensions.height;
-      isAtEnd = lastItemBottom <= containerBounds.height;
-    }
+    const isAtStart =
+      isInViews.findIndex((v) => v.index === 0 && v.inView) >= 0 &&
+      itemTransformations[0 % FULL_BUFFER]?.y >= 0;
+    const isAtEnd =
+      isInViews.findIndex((v) => v.index === length - 1 && v.inView) >= 0 &&
+      itemTransformations[(length - 1) % FULL_BUFFER]?.y +
+        itemDimensions[(length - 1) % FULL_BUFFER]?.height <=
+        containerBounds.height;
 
     if (isTouch) {
-      // Scale delta for wheel events
       scaledDeltaY = Math.sign(deltaY) * Math.min(Math.abs(deltaY), SCROLL_CHUNK_SIZE);
 
-      // Apply bounce effect
-      if (isAtStart || isAtEnd) {
-        index = isAtStart ? 0 : length - 1;
-        offset += scaledDeltaY * BOUNCE_TENSION;
-        isOutOfBounds = true;
-      } else {
-        offset += scaledDeltaY;
-        scrollDelta.y = offset;
-        isOutOfBounds = false;
-      }
+      if (isAtStart) {
+        if (scaledDeltaY < 0) {
+          offset += scaledDeltaY;
+          scrollDelta.y = offset;
+          containerY = 0;
+          transformStyle = `transform: translate3d(0, ${containerY}px, 0); transition: transform 200ms ease-in-out;`;
+        } else {
+          isTransformedContainer = true;
 
-      // Return to bounds if out of bounds and not touching
-      if (isOutOfBounds && !isTouching) {
-        requestAnimationFrame(() => {
-          const targetY = isAtStart
-            ? 0
-            : containerBounds.height - itemDimensions[index % FULL_BUFFER].height;
-          const distance = targetY - offset;
+          if (!isTouching) {
+            offset = 0;
+            scaledDeltaY *= BOUNCE_TENSION;
+            containerY += scaledDeltaY;
+            let currentTransform = containerY;
+            const returnToStart = () => {
+              // TODO: refine easing of this
+              currentTransform *= 1 - RETURN_SPEED;
+              containerY = Math.round(currentTransform * 100) / 100;
+              transformStyle = `transform: translate3d(0, ${containerY}px, 0)`;
 
-          if (Math.abs(distance) < 0.5) {
-            offset = targetY;
-            isOutOfBounds = false;
+              if (containerY > -4 && containerY < 4) {
+                cancelMomentumScrolling();
+                containerY = 0;
+                transformStyle = `transform: translate3d(0, ${containerY}px, 0)`;
+                isTransformedContainer = false;
+              }
+            };
+            animationFrame = requestAnimationFrame(returnToStart);
           } else {
-            offset += distance * RETURN_SPEED;
-            requestAnimationFrame(applyMomentum);
+            if (scaledDeltaY > 0) {
+              scaledDeltaY *= BOUNCE_TENSION;
+              containerY += scaledDeltaY;
+              isTransformedContainer = true;
+              transformStyle = `transform: translate3d(0, ${containerY}px, 0)`;
+            } else {
+              containerY += scaledDeltaY;
+              isTransformedContainer = false;
+              transformStyle = `transform: translate3d(0, ${containerY}px, 0)`;
+            }
           }
-        });
+        }
+      } else if (isAtEnd) {
+        if (scaledDeltaY > 0) {
+          offset += scaledDeltaY;
+          scrollDelta.y = offset;
+          containerY = 0;
+          transformStyle = `transform: translate3d(0, ${containerY}px, 0); transition: transform 200ms ease-in-out;`;
+        } else {
+          isTransformedContainer = true;
+
+          if (!isTouching) {
+            offset = containerBounds.height - itemDimensions[(length - 1) % FULL_BUFFER].height;
+            scaledDeltaY *= BOUNCE_TENSION;
+            containerY += scaledDeltaY;
+            let currentTransform = containerY;
+            const returnToEnd = () => {
+              // TODO: refine easing of this
+              currentTransform *= 1 - RETURN_SPEED;
+              containerY = Math.round(currentTransform * 100) / 100;
+              transformStyle = `transform: translate3d(0, ${containerY}px, 0);`;
+
+              if (containerY > -4 && containerY < 4) {
+                cancelMomentumScrolling();
+                containerY = 0;
+                transformStyle = `transform: translate3d(0, ${containerY}px, 0);`;
+                isTransformedContainer = false;
+              }
+            };
+            requestAnimationFrame(returnToEnd);
+          } else {
+            scaledDeltaY *= BOUNCE_TENSION;
+            containerY += scaledDeltaY;
+            transformStyle = `transform: translate3d(0, ${containerY}px, 0)`;
+          }
+        }
+      } else {
+        if (isTransformedContainer) {
+          scaledDeltaY *= BOUNCE_TENSION;
+          containerY += scaledDeltaY;
+          let currentTransform = containerY;
+          const returnToEnd = () => {
+            // TODO: refine easing of this
+            currentTransform *= 1 - RETURN_SPEED;
+            containerY = Math.round(currentTransform * 100) / 100;
+            transformStyle = `transform: translate3d(0, ${containerY}px, 0)`;
+
+            if (containerY > -4 && containerY < 4) {
+              cancelMomentumScrolling();
+              containerY = 0;
+              transformStyle = `transform: translate3d(0, ${containerY}px, 0)`;
+              isTransformedContainer = false;
+            }
+          };
+          requestAnimationFrame(returnToEnd);
+        } else {
+          offset += scaledDeltaY;
+          scrollDelta.y = offset;
+          isTransformedContainer = false;
+        }
       }
+      calculateNewReferences(deltaY);
     } else {
-      // Non-touch scrolling: hard limit
-      if (isAtStart && deltaY > 0) {
-        index = 0;
+      // // Non-touch scrolling: hard limit
+      offset += scaledDeltaY;
+      scrollDelta.y = offset;
+      calculateNewReferences(deltaY);
+
+      const recalculatedIsAtEnd =
+        isInViews.findIndex((v) => v.index === length - 1 && v.inView) >= 0 &&
+        itemTransformations[(length - 1) % FULL_BUFFER]?.y +
+          itemDimensions[(length - 1) % FULL_BUFFER]?.height <=
+          containerBounds.height;
+
+      if (index === 0 && offset > 0) {
         offset = 0;
-      } else if (isAtEnd && deltaY < 0) {
+      } else if (recalculatedIsAtEnd) {
         index = length - 1;
         offset = containerBounds.height - itemDimensions[(length - 1) % FULL_BUFFER].height;
-      } else {
-        offset += scaledDeltaY;
-        scrollDelta.y = offset;
       }
-    }
-
-    calculateNewReferences(deltaY);
-
-    // Apply momentum if large scroll
-    if (Math.abs(deltaY) > SCROLL_CHUNK_SIZE && isTouch) {
-      requestAnimationFrame(() => {
-        isTouchMove = true;
-        scrollTransformations(deltaY * MOMENTUM_FACTOR);
-      });
     }
   };
 
@@ -511,7 +583,7 @@
 <div
   bind:this={containerRef}
   class={scrollerClass}
-  style={`width: ${width}; height: ${height}; overflow: hidden; position: relative; ${scrollerStyle}`}
+  style={`width: ${width}; height: ${height}; overflow: hidden; position: relative; ${scrollerStyle}; ${transformStyle}`}
   role="listbox"
   tabindex="-1"
   aria-label="Scrollable content"
@@ -530,6 +602,7 @@
         <MagicItem
           bind:width={itemDimensions[d.index % FULL_BUFFER].width}
           bind:height={itemDimensions[d.index % FULL_BUFFER].height}
+          bind:isInView={isInViews[d.index % FULL_BUFFER]}
           transform={d}
           component={item}
           index={d.index}

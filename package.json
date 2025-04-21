@@ -1,6 +1,6 @@
 {
   "name": "svelte-magic-scroller",
-  "version": "0.1.11",
+  "version": "0.1.12",
   "license": "MIT",
   "repository": "https://github.com/fong/svelte-magic-scroller",
   "homepage": "https://svelte-magic-scroller.pages.dev/",
@@ -77,5 +77,8 @@
     "typescript": "^5.7.3",
     "vite": "^5.4.14",
     "vitest": "^2.1.8"
+  },
+  "dependencies": {
+    "svelte-inview": "^4.0.4"
   }
 }

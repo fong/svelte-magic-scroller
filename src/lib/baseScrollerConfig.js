@@ -2,9 +2,9 @@ const baseScrollerConfig = {
   buffer: 15,
   momentum: 0.8,
   friction: {
-    fast: 0.99,
-    medium: 0.98,
-    slow: 0.95
+    fast: 0.97,
+    medium: 0.95,
+    slow: 0.92
   },
   velocity: {
     fast: 30,
@@ -12,7 +12,7 @@ const baseScrollerConfig = {
   },
   bounce: {
     tension: 0.3,
-    returnSpeed: 0.3
+    returnSpeed: 0.15
   }
 };
 

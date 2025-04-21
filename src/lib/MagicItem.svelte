@@ -1,4 +1,6 @@
 <script>
+  import { inview } from 'svelte-inview';
+
   /**
    * @typedef {Object} Transform
    * @property {number | undefined} index - Index of the item in the list
@@ -17,6 +19,8 @@
     transform = $bindable({ index: undefined, x: undefined, y: undefined }),
     /** @type {boolean} Whether the item is being touched/dragged */
     isTouchMove,
+    /** @type {boolean} Whether the item is in viewport */
+    isInView = $bindable({ index, inView: false }),
     /** @type {string} Additional CSS classes */
     class: cn = '',
     /** @type {string} Additional inline styles */
@@ -26,6 +30,8 @@
     /** @type {isMounted} true if parent component has been mounted */
     isMounted
   } = $props();
+
+  const options = {};
 
   let transformStyle = $state(`transform: translate3d(0, 99999999px, 0);`);
 
@@ -42,8 +48,21 @@
 
 <div
   class="magic-scroller-item {cn}"
+  use:inview={options}
   bind:offsetWidth={width}
   bind:offsetHeight={height}
+  oninview_enter={(event) => {
+    const { inView } = event.detail;
+    isInView = { inView, index };
+  }}
+  oninview_change={(event) => {
+    const { inView } = event.detail;
+    isInView = { inView, index };
+  }}
+  oninview_leave={(event) => {
+    const { inView } = event.detail;
+    isInView = { inView, index };
+  }}
   style={`${style} ${transformStyle}`}
 >
   {@render component(index)}

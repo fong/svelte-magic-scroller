@@ -7,6 +7,10 @@ settings:
 importers:
 
   .:
+    dependencies:
+      svelte-inview:
+        specifier: ^4.0.4
+        version: 4.0.4(svelte@5.19.8)
     devDependencies:
       '@chromatic-com/storybook':
         specifier: ^3.2.4
@@ -1965,6 +1969,11 @@ packages:
     peerDependenciesMeta:
       svelte:
         optional: true
+
+  svelte-inview@4.0.4:
+    resolution: {integrity: sha512-PlXNSHHijvQ6MhmSYUj6cMyS+39NttoTffk7W5WYF8T2tsyLgJnKhyuAF+/hSujbY0vpsmqXaMd2nolEKvR8Kw==}
+    peerDependencies:
+      svelte: ^3.0.0 || ^4.0.0 || ^5.0.0 || ^5.0.0-next
 
   svelte-preprocess@5.1.4:
     resolution: {integrity: sha512-IvnbQ6D6Ao3Gg6ftiM5tdbR6aAETwjhHV+UKGf5bHGYR69RQvF1ho0JKPcbUON4vy4R7zom13jPjgdOWCQ5hDA==}
@@ -4076,6 +4085,10 @@ snapshots:
       postcss: 8.5.1
       postcss-scss: 4.0.9(postcss@8.5.1)
     optionalDependencies:
+      svelte: 5.19.8
+
+  svelte-inview@4.0.4(svelte@5.19.8):
+    dependencies:
       svelte: 5.19.8
 
   svelte-preprocess@5.1.4(postcss-load-config@3.1.4(postcss@8.5.1))(postcss@8.5.1)(svelte@5.19.8)(typescript@5.7.3):
