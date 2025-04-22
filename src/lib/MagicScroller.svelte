@@ -422,6 +422,7 @@
           isTransformedContainer = true;
 
           if (!isTouching) {
+            index = length - 1;
             offset = containerBounds.height - itemDimensions[(length - 1) % FULL_BUFFER].height;
             scaledDeltaY *= BOUNCE_TENSION;
             containerY += scaledDeltaY;
