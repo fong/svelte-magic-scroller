@@ -6,7 +6,6 @@
   /**
    * @typedef {Object} ScrollerConfig
    * @property {number} buffer - Number of items to buffer above and below visible area
-   * @property {number} momentum - Momentum factor for scroll deceleration
    * @property {Object} friction - Friction coefficients for different scroll speeds
    * @property {number} friction.fast - Friction for fast swipes (0.99)
    * @property {number} friction.medium - Friction for medium swipes (0.98)
@@ -50,7 +49,6 @@
   const VELOCITY_HISTORY = 5;
   const MIN_VELOCITY = 0.1;
   const SCROLL_CHUNK_SIZE = 100;
-  const MOMENTUM_FACTOR = 0.8;
 
   const FRICTION_FAST = config.friction.fast; // Very low friction for fast swipes
   const FRICTION_MEDIUM = config.friction.medium; // Medium friction for normal swipes
@@ -82,6 +80,7 @@
   let transformStyle = $state('');
   let containerY = $state(0);
   let isTransformedContainer = $state(false);
+  let isReturningFromBounce = $state(false);
 
   let isInViews = $state(Array(FULL_BUFFER).fill({ index: -1, inView: false }));
 
@@ -152,6 +151,7 @@
       velocityX = 0;
       velocityY = 0;
       isMomentumScrolling = false;
+      isReturningFromBounce = false;
     }
   };
 
@@ -290,6 +290,8 @@
 
   const handleOnTouchStart = (e) => {
     cancelMomentumScrolling();
+    cancelAnimationFrame(animationFrame);
+    isReturningFromBounce = false;
     const touch = e.touches[0];
     lastX = touch.clientX;
     lastY = touch.clientY;
@@ -376,18 +378,21 @@
             containerY += scaledDeltaY;
             let currentTransform = containerY;
             const returnToStart = () => {
-              // TODO: refine easing of this
               currentTransform *= 1 - RETURN_SPEED;
               containerY = Math.round(currentTransform * 100) / 100;
               transformStyle = `transform: translate3d(0, ${containerY}px, 0)`;
 
-              if (containerY > -4 && containerY < 4) {
+              if (containerY > -1 && containerY < 1) {
                 cancelMomentumScrolling();
                 containerY = 0;
                 transformStyle = `transform: translate3d(0, ${containerY}px, 0)`;
                 isTransformedContainer = false;
+                isReturningFromBounce = false;
+              } else {
+                animationFrame = requestAnimationFrame(returnToStart);
               }
             };
+            isReturningFromBounce = true;
             animationFrame = requestAnimationFrame(returnToStart);
           } else {
             if (scaledDeltaY > 0) {
@@ -396,9 +401,23 @@
               isTransformedContainer = true;
               transformStyle = `transform: translate3d(0, ${containerY}px, 0)`;
             } else {
-              containerY += scaledDeltaY;
-              isTransformedContainer = false;
-              transformStyle = `transform: translate3d(0, ${containerY}px, 0)`;
+              if (isReturningFromBounce) {
+                cancelAnimationFrame(animationFrame);
+                isReturningFromBounce = false;
+                containerY = 0;
+                isTransformedContainer = false;
+                transformStyle = `transform: translate3d(0, ${containerY}px, 0)`;
+
+                offset += scaledDeltaY;
+                scrollDelta.y = offset;
+              } else {
+                containerY += scaledDeltaY;
+                if (containerY <= 0) {
+                  containerY = 0;
+                  isTransformedContainer = false;
+                }
+                transformStyle = `transform: translate3d(0, ${containerY}px, 0)`;
+              }
             }
           }
         }
@@ -418,7 +437,6 @@
             containerY += scaledDeltaY;
             let currentTransform = containerY;
             const returnToEnd = () => {
-              // TODO: refine easing of this
               currentTransform *= 1 - RETURN_SPEED;
               containerY = Math.round(currentTransform * 100) / 100;
               transformStyle = `transform: translate3d(0, ${containerY}px, 0);`;
@@ -428,13 +446,36 @@
                 containerY = 0;
                 transformStyle = `transform: translate3d(0, ${containerY}px, 0);`;
                 isTransformedContainer = false;
+                isReturningFromBounce = false;
+              } else {
+                animationFrame = requestAnimationFrame(returnToEnd);
               }
             };
-            requestAnimationFrame(returnToEnd);
+            isReturningFromBounce = true;
+            animationFrame = requestAnimationFrame(returnToEnd);
           } else {
-            scaledDeltaY *= BOUNCE_TENSION;
-            containerY += scaledDeltaY;
-            transformStyle = `transform: translate3d(0, ${containerY}px, 0)`;
+            if (scaledDeltaY < 0) {
+              scaledDeltaY *= BOUNCE_TENSION;
+              containerY += scaledDeltaY;
+              transformStyle = `transform: translate3d(0, ${containerY}px, 0)`;
+            } else {
+              if (isReturningFromBounce) {
+                cancelAnimationFrame(animationFrame);
+                isReturningFromBounce = false;
+                containerY = 0;
+                isTransformedContainer = false;
+                transformStyle = `transform: translate3d(0, ${containerY}px, 0)`;
+                offset += scaledDeltaY;
+                scrollDelta.y = offset;
+              } else {
+                containerY += scaledDeltaY;
+                if (containerY >= 0) {
+                  containerY = 0;
+                  isTransformedContainer = false;
+                }
+                transformStyle = `transform: translate3d(0, ${containerY}px, 0)`;
+              }
+            }
           }
         }
       } else {
@@ -443,7 +484,6 @@
           containerY += scaledDeltaY;
           let currentTransform = containerY;
           const returnToEnd = () => {
-            // TODO: refine easing of this
             currentTransform *= 1 - RETURN_SPEED;
             containerY = Math.round(currentTransform * 100) / 100;
             transformStyle = `transform: translate3d(0, ${containerY}px, 0)`;
@@ -464,7 +504,7 @@
       }
       calculateNewReferences(deltaY);
     } else {
-      // // Non-touch scrolling: hard limit
+      // Non-touch scrolling: hard limit
       offset += scaledDeltaY;
       scrollDelta.y = offset;
       calculateNewReferences(deltaY);
@@ -498,7 +538,6 @@
           : itemDimensions[(index + 1) % FULL_BUFFER].height;
 
       if (scrollDirection > 0) {
-        // Scrolling up
         if (
           offset > targetHeight ||
           (offset + containerBounds.height > targetHeight && targetHeight > containerBounds.height)
@@ -507,7 +546,6 @@
           index--;
         }
       } else {
-        // Scrolling down
         if (
           offset < 0 ||
           (offset + containerBounds.height < 0 && currentHeight < containerBounds.height)

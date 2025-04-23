@@ -63,7 +63,6 @@ Works best for super large lists like an activity feed or photo gallery
 ### Configuration
 
 - {number} buffer - Number of items to buffer above and below visible area
-- {number} momentum - Momentum factor for scroll deceleration
 
 Friction coefficients for different scroll speeds
 
@@ -84,7 +83,6 @@ Bounce effect configuration
 ```javascript
 config = {
   buffer: 15,
-  momentum: 0.8,
   friction: {
     fast: 0.99,
     medium: 0.98,

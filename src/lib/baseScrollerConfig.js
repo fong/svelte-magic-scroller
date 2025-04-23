@@ -1,6 +1,5 @@
 const baseScrollerConfig = {
   buffer: 15,
-  momentum: 0.8,
   friction: {
     fast: 0.97,
     medium: 0.95,
