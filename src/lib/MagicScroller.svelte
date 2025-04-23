@@ -1,6 +1,6 @@
 <script>
   import MagicItem from './MagicItem.svelte';
-  import { untrack, tick, onMount, onDestroy } from 'svelte';
+  import { untrack, tick, onMount } from 'svelte';
   import baseScrollerConfig from './baseScrollerConfig.js';
 
   /**
@@ -172,46 +172,36 @@
     if (!isMounted || !containerBounds || targetIndex < 0 || targetIndex >= length) return;
     cancelMomentumScrolling();
 
-    tick().then(() => {
-      isTouchMove = false;
-      if (targetIndex === 0 && options?.offset > 0) {
+    isTouchMove = false;
+    if (targetIndex === 0 && options?.offset > 0) {
+      index = targetIndex;
+      offset = 0;
+    } else if (targetIndex === length - 1) {
+      index = length - 1;
+      offset = containerBounds.height - itemDimensions[(length - 1) % FULL_BUFFER].height;
+    } else {
+      // Check remaining height from end of list to target
+      let remainingHeight = 0;
+      if (length - BUFFER_ZONE < targetIndex) {
+        // first load items around index to get item bounds
         index = targetIndex;
         offset = 0;
-      } else if (targetIndex === length - 1) {
-        index = targetIndex;
-        offset = 0;
-        tick().then(() => {
-          // hack to force recalculation for itemTransformations, index and offsets
-          scrollTransformations(-1);
-        });
-      } else {
-        // Check remaining height from end of list to target
-        let remainingHeight = 0;
-        if (length - BUFFER_ZONE < targetIndex) {
-          // first load items around index to get item bounds
-          index = targetIndex;
-          offset = 0;
-          tick().then(() => {
-            for (let i = length - 1; i >= targetIndex; i--) {
-              remainingHeight += itemDimensions[i % FULL_BUFFER].height;
-            }
-            // If remaining height is less than container, adjust offset
-            const proposedOffset = options?.offset || 0;
-            if (remainingHeight + proposedOffset <= containerBounds.height) {
-              index = length - 1;
-              offset = 0;
-              tick().then(() => {
-                // hack to force recalculation for itemTransformations, index and offsets
-                scrollTransformations(-1);
-              });
-            }
-          });
-        } else {
-          index = targetIndex;
-          offset = options?.offset || 0;
+
+        for (let i = length - 1; i > targetIndex; i--) {
+          remainingHeight += itemDimensions[i % FULL_BUFFER].height;
         }
+
+        // If remaining height is less than container, adjust offset
+        const proposedOffset = options?.offset || 0;
+        if (remainingHeight + proposedOffset <= containerBounds.height) {
+          index = length - 1;
+          offset = containerBounds.height - itemDimensions[(length - 1) % FULL_BUFFER].height;
+        }
+      } else {
+        index = targetIndex;
+        offset = options?.offset || 0;
       }
-    });
+    }
     isTouchMove = true;
   };
 
@@ -433,7 +423,7 @@
               containerY = Math.round(currentTransform * 100) / 100;
               transformStyle = `transform: translate3d(0, ${containerY}px, 0);`;
 
-              if (containerY > -4 && containerY < 4) {
+              if (containerY > -1 && containerY < 1) {
                 cancelMomentumScrolling();
                 containerY = 0;
                 transformStyle = `transform: translate3d(0, ${containerY}px, 0);`;
@@ -458,7 +448,7 @@
             containerY = Math.round(currentTransform * 100) / 100;
             transformStyle = `transform: translate3d(0, ${containerY}px, 0)`;
 
-            if (containerY > -4 && containerY < 4) {
+            if (containerY > -1 && containerY < 1) {
               cancelMomentumScrolling();
               containerY = 0;
               transformStyle = `transform: translate3d(0, ${containerY}px, 0)`;
