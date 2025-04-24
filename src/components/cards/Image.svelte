@@ -65,7 +65,6 @@
     display: flex;
     width: 100%;
     max-width: 420px;
-    height: 64px;
   }
 
   .card-image {

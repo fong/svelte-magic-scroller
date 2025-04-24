@@ -353,179 +353,174 @@
     animationFrame = requestAnimationFrame(applyMomentum);
   };
 
-  const scrollTransformations = (deltaY, isTouch) => {
-    let scaledDeltaY = deltaY;
-    // Calculate boundaries
-    const isAtStart =
+  const isAtScrollStart = () => {
+    return (
       isInViews.findIndex((v) => v.index === 0 && v.inView) >= 0 &&
-      itemTransformations[0 % FULL_BUFFER]?.y >= 0;
-    const isAtEnd =
+      itemTransformations[0 % FULL_BUFFER]?.y >= 0
+    );
+  };
+
+  const isAtScrollEnd = () => {
+    return (
       isInViews.findIndex((v) => v.index === length - 1 && v.inView) >= 0 &&
       itemTransformations[(length - 1) % FULL_BUFFER]?.y +
         itemDimensions[(length - 1) % FULL_BUFFER]?.height <=
-        containerBounds.height;
+        containerBounds.height
+    );
+  };
 
-    if (isTouch) {
-      scaledDeltaY = Math.sign(deltaY) * Math.min(Math.abs(deltaY), SCROLL_CHUNK_SIZE);
+  const applyBounceTension = (delta) => delta * BOUNCE_TENSION;
 
-      if (isAtStart) {
-        if (scaledDeltaY < 0) {
-          offset += scaledDeltaY;
-          scrollDelta.y = offset;
-          containerY = 0;
-          transformStyle = `transform: translate3d(0, ${containerY}px, 0); transition: transform 200ms ease-in-out;`;
-        } else {
-          isTransformedContainer = true;
+  const resetContainerTransform = () => {
+    containerY = 0;
+    transformStyle = `transform: translate3d(0, ${containerY}px, 0)`;
+    isTransformedContainer = false;
+    isReturningFromBounce = false;
+  };
 
-          if (!isTouching) {
-            offset = 0;
-            scaledDeltaY *= BOUNCE_TENSION;
-            containerY += scaledDeltaY;
-            let currentTransform = containerY;
-            const returnToStart = () => {
-              currentTransform *= 1 - RETURN_SPEED;
-              containerY = Math.round(currentTransform * 100) / 100;
-              transformStyle = `transform: translate3d(0, ${containerY}px, 0)`;
+  const animateReturnToZero = (onComplete = () => {}) => {
+    let currentTransform = containerY;
+    const animate = () => {
+      currentTransform *= 1 - RETURN_SPEED;
+      containerY = Math.round(currentTransform * 100) / 100;
+      transformStyle = `transform: translate3d(0, ${containerY}px, 0)`;
 
-              if (containerY > -1 && containerY < 1) {
-                cancelMomentumScrolling();
-                containerY = 0;
-                transformStyle = `transform: translate3d(0, ${containerY}px, 0)`;
-                isTransformedContainer = false;
-                isReturningFromBounce = false;
-              } else {
-                animationFrame = requestAnimationFrame(returnToStart);
-              }
-            };
-            isReturningFromBounce = true;
-            animationFrame = requestAnimationFrame(returnToStart);
-          } else {
-            if (scaledDeltaY > 0) {
-              scaledDeltaY *= BOUNCE_TENSION;
-              containerY += scaledDeltaY;
-              isTransformedContainer = true;
-              transformStyle = `transform: translate3d(0, ${containerY}px, 0)`;
-            } else {
-              if (isReturningFromBounce) {
-                cancelAnimationFrame(animationFrame);
-                isReturningFromBounce = false;
-                containerY = 0;
-                isTransformedContainer = false;
-                transformStyle = `transform: translate3d(0, ${containerY}px, 0)`;
-
-                offset += scaledDeltaY;
-                scrollDelta.y = offset;
-              } else {
-                containerY += scaledDeltaY;
-                if (containerY <= 0) {
-                  containerY = 0;
-                  isTransformedContainer = false;
-                }
-                transformStyle = `transform: translate3d(0, ${containerY}px, 0)`;
-              }
-            }
-          }
-        }
-      } else if (isAtEnd) {
-        if (scaledDeltaY > 0) {
-          offset += scaledDeltaY;
-          scrollDelta.y = offset;
-          containerY = 0;
-          transformStyle = `transform: translate3d(0, ${containerY}px, 0); transition: transform 200ms ease-in-out;`;
-        } else {
-          isTransformedContainer = true;
-
-          if (!isTouching) {
-            index = length - 1;
-            offset = containerBounds.height - itemDimensions[(length - 1) % FULL_BUFFER].height;
-            scaledDeltaY *= BOUNCE_TENSION;
-            containerY += scaledDeltaY;
-            let currentTransform = containerY;
-            const returnToEnd = () => {
-              currentTransform *= 1 - RETURN_SPEED;
-              containerY = Math.round(currentTransform * 100) / 100;
-              transformStyle = `transform: translate3d(0, ${containerY}px, 0);`;
-
-              if (containerY > -1 && containerY < 1) {
-                cancelMomentumScrolling();
-                containerY = 0;
-                transformStyle = `transform: translate3d(0, ${containerY}px, 0);`;
-                isTransformedContainer = false;
-                isReturningFromBounce = false;
-              } else {
-                animationFrame = requestAnimationFrame(returnToEnd);
-              }
-            };
-            isReturningFromBounce = true;
-            animationFrame = requestAnimationFrame(returnToEnd);
-          } else {
-            if (scaledDeltaY < 0) {
-              scaledDeltaY *= BOUNCE_TENSION;
-              containerY += scaledDeltaY;
-              transformStyle = `transform: translate3d(0, ${containerY}px, 0)`;
-            } else {
-              if (isReturningFromBounce) {
-                cancelAnimationFrame(animationFrame);
-                isReturningFromBounce = false;
-                containerY = 0;
-                isTransformedContainer = false;
-                transformStyle = `transform: translate3d(0, ${containerY}px, 0)`;
-                offset += scaledDeltaY;
-                scrollDelta.y = offset;
-              } else {
-                containerY += scaledDeltaY;
-                if (containerY >= 0) {
-                  containerY = 0;
-                  isTransformedContainer = false;
-                }
-                transformStyle = `transform: translate3d(0, ${containerY}px, 0)`;
-              }
-            }
-          }
-        }
+      if (containerY > -1 && containerY < 1) {
+        cancelMomentumScrolling();
+        resetContainerTransform();
+        onComplete();
       } else {
-        if (isTransformedContainer) {
-          scaledDeltaY *= BOUNCE_TENSION;
-          containerY += scaledDeltaY;
-          let currentTransform = containerY;
-          const returnToEnd = () => {
-            currentTransform *= 1 - RETURN_SPEED;
-            containerY = Math.round(currentTransform * 100) / 100;
-            transformStyle = `transform: translate3d(0, ${containerY}px, 0)`;
-
-            if (containerY > -1 && containerY < 1) {
-              cancelMomentumScrolling();
-              containerY = 0;
-              transformStyle = `transform: translate3d(0, ${containerY}px, 0)`;
-              isTransformedContainer = false;
-            }
-          };
-          requestAnimationFrame(returnToEnd);
-        } else {
-          offset += scaledDeltaY;
-          scrollDelta.y = offset;
-          isTransformedContainer = false;
-        }
+        animationFrame = requestAnimationFrame(animate);
       }
-      calculateNewReferences(deltaY);
-    } else {
-      // Non-touch scrolling: hard limit
+    };
+    isReturningFromBounce = true;
+    animationFrame = requestAnimationFrame(animate);
+  };
+
+  const handleTouchScrollAtStart = (scaledDeltaY) => {
+    if (scaledDeltaY < 0) {
       offset += scaledDeltaY;
       scrollDelta.y = offset;
-      calculateNewReferences(deltaY);
+      resetContainerTransform();
+      transformStyle += '; transition: transform 200ms ease-in-out;';
+    } else {
+      isTransformedContainer = true;
+      if (!isTouching) {
+        offset = 0;
+        containerY += applyBounceTension(scaledDeltaY);
+        animateReturnToZero();
+      } else {
+        if (scaledDeltaY > 0) {
+          containerY += applyBounceTension(scaledDeltaY);
+          transformStyle = `transform: translate3d(0, ${containerY}px, 0)`;
+        } else {
+          if (isReturningFromBounce) {
+            cancelAnimationFrame(animationFrame);
+            isReturningFromBounce = false;
+            resetContainerTransform();
+            offset += scaledDeltaY;
+            scrollDelta.y = offset;
+          } else {
+            containerY += scaledDeltaY;
+            if (containerY <= 0) {
+              resetContainerTransform();
+            } else {
+              transformStyle = `transform: translate3d(0, ${containerY}px, 0)`;
+            }
+          }
+        }
+      }
+    }
+  };
 
+  const handleTouchScrollAtEnd = (scaledDeltaY) => {
+    if (scaledDeltaY > 0) {
+      offset += scaledDeltaY;
+      scrollDelta.y = offset;
+      resetContainerTransform();
+      transformStyle += '; transition: transform 200ms ease-in-out;';
+    } else {
+      isTransformedContainer = true;
+      if (!isTouching) {
+        index = length - 1;
+        offset = containerBounds.height - itemDimensions[(length - 1) % FULL_BUFFER].height;
+        containerY += applyBounceTension(scaledDeltaY);
+        animateReturnToZero();
+      } else {
+        if (scaledDeltaY < 0) {
+          containerY += applyBounceTension(scaledDeltaY);
+          transformStyle = `transform: translate3d(0, ${containerY}px, 0)`;
+        } else {
+          if (isReturningFromBounce) {
+            cancelAnimationFrame(animationFrame);
+            isReturningFromBounce = false;
+            resetContainerTransform();
+            offset += scaledDeltaY;
+            scrollDelta.y = offset;
+          } else {
+            containerY += scaledDeltaY;
+            if (containerY >= 0) {
+              resetContainerTransform();
+            } else {
+              transformStyle = `transform: translate3d(0, ${containerY}px, 0)`;
+            }
+          }
+        }
+      }
+    }
+  };
+
+  const handleTouchScrollInMiddle = (scaledDeltaY) => {
+    if (isTransformedContainer) {
+      containerY += applyBounceTension(scaledDeltaY);
+      animateReturnToZero();
+    } else {
+      offset += scaledDeltaY;
+      scrollDelta.y = offset;
+      isTransformedContainer = false;
+    }
+  };
+
+  const handleNonTouchScroll = (scaledDeltaY) => {
+    offset += scaledDeltaY;
+    scrollDelta.y = offset;
+
+    calculateNewReferences(scaledDeltaY);
+
+    if (index === 0 && offset > 0) {
+      offset = 0;
+    } else {
       const recalculatedIsAtEnd =
         isInViews.findIndex((v) => v.index === length - 1 && v.inView) >= 0 &&
         itemTransformations[(length - 1) % FULL_BUFFER]?.y +
           itemDimensions[(length - 1) % FULL_BUFFER]?.height <=
           containerBounds.height;
 
-      if (index === 0 && offset > 0) {
-        offset = 0;
-      } else if (recalculatedIsAtEnd) {
+      if (recalculatedIsAtEnd) {
         index = length - 1;
         offset = containerBounds.height - itemDimensions[(length - 1) % FULL_BUFFER].height;
       }
+    }
+  };
+
+  const scrollTransformations = (deltaY, isTouch = false) => {
+    let scaledDeltaY = deltaY;
+
+    if (isTouch) {
+      scaledDeltaY = Math.sign(deltaY) * Math.min(Math.abs(deltaY), SCROLL_CHUNK_SIZE);
+      const atStart = isAtScrollStart();
+      const atEnd = isAtScrollEnd();
+
+      if (atStart) {
+        handleTouchScrollAtStart(scaledDeltaY);
+      } else if (atEnd) {
+        handleTouchScrollAtEnd(scaledDeltaY);
+      } else {
+        handleTouchScrollInMiddle(scaledDeltaY);
+      }
+      calculateNewReferences(deltaY);
+    } else {
+      handleNonTouchScroll(scaledDeltaY);
     }
   };
 
