@@ -9,6 +9,8 @@
   } = $props();
   let sidepanelRef;
 
+  let goToValue = $state(0);
+
   const sections = ['Top', 'Features', 'Install', 'How to Use', 'Scroll bar', 'Quirks'];
 
   $effect(() => {
@@ -56,6 +58,18 @@
         onkeyup={checkCurrentIndex}
         type="number"
       />
+      <label for="go-to-input">Go to</label>
+      <div class="go-to">
+        <input
+          id="go-to-input"
+          min="0"
+          max={length - 1}
+          required
+          bind:value={goToValue}
+          type="number"
+        />
+        <button id="go-to-button" onclick={() => ref?.goto(goToValue, { offset: 56 })}>Go!</button>
+      </div>
     </div>
     {#each sections as section, i}
       <button
@@ -160,6 +174,20 @@
     p {
       margin: 0;
     }
+  }
+
+  .go-to {
+    display: flex;
+  }
+
+  #go-to-input {
+    flex: 1;
+  }
+
+  #go-to-button {
+    font-size: 0.75rem;
+    padding: 2px 4px;
+    margin: 4px;
   }
 
   label {

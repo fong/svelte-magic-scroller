@@ -178,7 +178,10 @@
       offset = 0;
     } else if (targetIndex === length - 1) {
       index = length - 1;
-      offset = containerBounds.height - itemDimensions[(length - 1) % FULL_BUFFER].height;
+      offset = 0;
+      tick().then(() => {
+        offset = containerBounds.height - itemDimensions[(length - 1) % FULL_BUFFER].height;
+      });
     } else {
       // Check remaining height from end of list to target
       let remainingHeight = 0;
@@ -187,16 +190,18 @@
         index = targetIndex;
         offset = 0;
 
-        for (let i = length - 1; i > targetIndex; i--) {
-          remainingHeight += itemDimensions[i % FULL_BUFFER].height;
-        }
+        tick().then(() => {
+          for (let i = length - 1; i > targetIndex; i--) {
+            remainingHeight += itemDimensions[i % FULL_BUFFER].height;
+          }
 
-        // If remaining height is less than container, adjust offset
-        const proposedOffset = options?.offset || 0;
-        if (remainingHeight + proposedOffset <= containerBounds.height) {
-          index = length - 1;
-          offset = containerBounds.height - itemDimensions[(length - 1) % FULL_BUFFER].height;
-        }
+          // If remaining height is less than container, adjust offset
+          const proposedOffset = options?.offset || 0;
+          if (remainingHeight + proposedOffset <= containerBounds.height) {
+            index = length - 1;
+            offset = containerBounds.height - itemDimensions[(length - 1) % FULL_BUFFER].height;
+          }
+        });
       } else {
         index = targetIndex;
         offset = options?.offset || 0;
