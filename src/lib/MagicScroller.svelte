@@ -616,6 +616,7 @@
   role="listbox"
   tabindex="-1"
   aria-label="Scrollable content"
+  onwheel={handleOnWheel}
   onmousewheel={handleOnWheel}
   onmousedown={handleOnMouseDown}
   onmousemove={handleOnMouseMove}
